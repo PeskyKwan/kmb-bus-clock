@@ -1,0 +1,31 @@
+.venv/
+.pio/
+.platformio/
+backups/
+__pycache__/
+*.pyc
+.env
+.env.*
+*.bin
+*.elf
+_CONSOLIDATED_HANDOFF.md
+design/approved-*/
+# Generated font rasters are rebuilt from locally licensed fonts.
+src/smooth_font.h
+src/font_assets.h
+src/ui_assets.h
+src/setup_page.h
+assets/design-base.png
+assets/design-preview.png
+# Vendor documents are linked instead of redistributed.
+docs/*.pdf
+docs/specification.txt
+docs/schematic.txt
+docs/ST7789P3_Init.txt
+docs/92-inbound-stops.json
+docs/92-outbound-stops.json
+docs/eta-sample.json
+
+# Maintainer-only planning and superseded asset generator.
+SETTINGS.md
+tools/build_font.py

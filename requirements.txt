@@ -1,0 +1,6 @@
+Pillow>=11,<14
+platformio==6.2.0
+esptool==5.4.0
+pyserial==3.5
+requests>=2.32,<3
+cryptography>=43
