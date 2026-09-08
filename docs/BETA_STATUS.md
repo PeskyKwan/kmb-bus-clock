@@ -5,7 +5,8 @@
 - Wi-Fi setup, automatic reconnect, certificate-verified KMB ETA after restart.
 - Route catalog and boarding-stop selection for92 toward Diamond Hill at Pak Sha Wan.
 - Approved smooth UI on the physical display.
-- Host tests:12 ETA/time/alert-boundary checks. Firmware builds.
+- Host tests:12 ETA/time/alert-boundary checks plus16 ETA-animation checks. Firmware builds.
+- ETA-driven marker added; physical animation acceptance is pending. It is a10-minute normalized countdown illustration, not GPS.
 
 ## Still beta / not yet fully verified
 - Real-trip alert acceptance, all route/direction/service combinations, long names and unusual geography.

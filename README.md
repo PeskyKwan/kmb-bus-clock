@@ -12,9 +12,10 @@ A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a
 - Configurable lead time and screen brightness.
 - One-shot **visual** reminder: arm it, receive one alert, tap to dismiss. Arm again for the next trip.
 - Smooth Chinese/Latin fonts and the approved compact layout.
+- A small animated bus driven by the real ETA countdown, explicitly labelled as an estimate.
 - An illustrated road segment for the bundled 92/Pak Sha Wan example. Other locations use a labelled station-position schematic.
 
-**Important beta limits:** audio is not implemented; the board has no attached speaker. No live bus GPS is supplied or inferred. General road-map fitting, label collision handling, arbitrary-route visual acceptance, and reminder schedules still need work. Never use this as your only way to decide when to catch a bus.
+**Important beta limits:** audio is not implemented; the board has no attached speaker. No live bus GPS is supplied. General road-map fitting, label collision handling, arbitrary-route visual acceptance, and reminder schedules still need work. Never use this as your only way to decide when to catch a bus.
 
 ## Hardware
 
@@ -98,7 +99,7 @@ Leaving the Wi-Fi inputs empty preserves the saved connection. A newly selected 
 - A number is an estimated arrival time, not a guarantee.
 - `--` means no usable ETA (offline, waiting, no forecast, failed request or stale data).
 - The device normally polls every 30 seconds, backing off on failures. Data older than 120 seconds cannot trigger an alert.
-- No bus position marker is shown in live mode: ETA does not establish GPS position.
+- The bus marker is an **illustrative ETA countdown**, not GPS or a claim that a bus passed a particular stop. The final10minutes map to the displayed path:4minutes is approximately60% along. Longer waits stay at the start. It moves gently, follows ETA revisions, and disappears on stale/null/offline data.
 - Notifications are one-shot. `提醒已開` means armed; an alert automatically disarms to avoid repeated alerts from ETA revisions.
 
 See [map design and remaining work](docs/MAP_DESIGN.md), [beta status](docs/BETA_STATUS.md), and [third-party attribution](THIRD_PARTY.md).
@@ -108,11 +109,13 @@ See [map design and remaining work](docs/MAP_DESIGN.md), [beta status](docs/BETA
 ```sh
 c++ -std=c++17 tests/eta_logic_test.cpp -o /tmp/kmb-eta-tests
 /tmp/kmb-eta-tests
+c++ -std=c++17 tests/eta_animation_test.cpp -o /tmp/kmb-animation-tests
+/tmp/kmb-animation-tests
 python -m py_compile setup/server.py
 pio run
 ```
 
-The 12 host checks cover timezone conversion, invalid/null timestamps, stale/future data, offline state, arming and threshold boundaries. They are not a substitute for device, route and real-trip testing.
+The12 ETA checks and16 animation checks cover timezone conversion, invalid/null timestamps, stale/future data, offline state, arming and threshold boundaries. They are not a substitute for device, route and real-trip testing.
 
 ## Contributing
 

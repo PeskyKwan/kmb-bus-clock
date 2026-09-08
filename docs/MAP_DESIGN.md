@@ -7,7 +7,7 @@ The display's map panel is compact and fixed in the approved layout. The *geogra
 - The illustrated 92/Pak Sha Wan section is a static raster made from OSM geometry and official KMB stop coordinates.
 - For other stop selections, three stop coordinates are fitted into a small schematic. It is labelled as a station-position diagram, not a road map.
 - Current fallback uses different x/y scale constants (55 vs95). Although points fit, this can distort diagonal angles and geographic aspect ratio. Label overlaps and long names are not fully handled. Do not describe this as finished universal map support.
-- Live mode deliberately has no moving bus marker. The ETA feed is not bus GPS. The earlier moving bus was an explicitly labelled design demo.
+- Live mode now includes a user-requested **illustrative ETA-driven bus marker**. The last10minutes are normalized along the visible path; longer waits remain at the start. This is not a measured vehicle position, stop passage, speed, or travel-time model. The caption says ETA估算. Stale/null/offline data hides it; large forecast revisions reposition it. General road fitting remains unfinished.
 
 ## Proposed next implementation
 
@@ -24,4 +24,4 @@ The display's map panel is compact and fixed in the approved layout. The *geogra
 
 Vertical, horizontal, both diagonal slopes, far-apart stops, very close/coincident stops, loops/U-turns, road sections extending outside stop-only bounds, long labels, first/second stop, opposite direction, express variant skipping stops, and loss of map data.
 
-The UI panel, plate, fonts and controls remain unchanged by the fitting algorithm. A future estimated movement feature must remain visibly approximate and needs a separately validated method; it is not unlocked merely by drawing a real map.
+The UI panel, plate, fonts and controls remain unchanged by the fitting algorithm. The current marker remains visibly approximate. A more geographically meaningful position model requires separately validated data; a real basemap does not make the vehicle position real.

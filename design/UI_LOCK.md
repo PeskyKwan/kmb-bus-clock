@@ -24,3 +24,7 @@ The acceptance archive above stays local and is intentionally excluded from the 
 Route/stop/ETA/status content must continue to update. Functional additions must fit the existing design or use a separate settings screen. Obtain explicit approval before changing appearance or layout. Compare proposed visual changes against the acceptance photo before flashing; preserve device preferences.
 
 The photographed22-minute arrival is only the acceptance-time value, not a fixture or constant.
+
+## Explicitly approved addition — 2026-09-09
+
+Sum requested restoring the cute bus animation in live mode using ETA estimation. A small marker and the ETA估算 caption are authorized additions; the rest of the approved layout/fonts/plate/map remain locked. Marker movement is illustrative, not measured bus location.
