@@ -1,4 +1,4 @@
-"""USB appearance QA; previews themes without saving, restores main UI."""
+"""USB appearance QA; checks instant-save themes and restores the original mode/main UI."""
 import argparse,json,time
 from pathlib import Path
 import serial
@@ -44,10 +44,13 @@ try:
  ui('preview');time.sleep(.3);capture('night')
  ui('close');ui('open');tap(60,150);tap(60,60);r=tap(60,109);assert not r['nightMode'] and r['themeMode']==1
  ui('preview');time.sleep(.3);capture('day')
- ui('close');after=command({'cmd':'state'},'state')
+ ui('close');ui('open');tap(60,150);tap(60,60);tap(60,60+49*base['themeMode']);ui('close');after=command({'cmd':'state'},'state')
  for k in ('route','bound','service','stop','brightness','themeMode'):assert after[k]==base[k],k
- print('Theme previews / cancel / preserved config PASS',flush=True)
+ print('Day/night / restored mode / preserved route PASS',flush=True)
 finally:
- try:ui('close')
+ try:
+  if 'base' in globals():
+   ui('close');ui('open');tap(60,150);tap(60,60);tap(60,60+49*base['themeMode'])
+  ui('close')
  except Exception:pass
  s.close()

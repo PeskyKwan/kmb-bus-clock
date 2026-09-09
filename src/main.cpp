@@ -99,7 +99,7 @@ void worker(void*){Request req;uint32_t validated=0;for(;;){if(xQueueReceive(req
  xQueueSend(results,&result,portMAX_DELAY);}}
 void calibrationView(){lcd.fillScreen(BG);centered(0,80,320,"請按十字校正觸控",20);int x=calStep==1?290:30,y=calStep==2?210:30;lcd.drawLine(x-12,y,x+12,y,RED);lcd.drawLine(x,y-12,x,y+12,RED);}
 void drawMain(){textBG=BG;lcd.fillScreen(BG);drawPlate();
- label(134,22,"往",12);label(149,22,cfg.destination,12,INK,159);lcd.fillRoundRect(262,4,54,28,6,INK);textBG=INK;centered(262,10,54,"設定",16,BG);textBG=BG;
+ label(134,22,"往",12);label(149,22,cfg.destination,12,INK,159);lcd.fillRoundRect(262,4,54,28,6,INK);textBG=INK;for(int i=0;i<8;i++){float a=i*3.14159265f/4;for(int d=0;d<2;d++)lcd.drawLine(289+roundf(cosf(a)*7),17+d+roundf(sinf(a)*7),289+roundf(cosf(a)*11),17+d+roundf(sinf(a)*11),BG);}lcd.drawCircle(289,18,7,BG);lcd.drawCircle(289,18,6,BG);lcd.fillCircle(289,18,3,BG);textBG=BG;
  const char*message="未接 Wi-Fi";time_t now=time(nullptr);bool fresh=WiFi.status()==WL_CONNECTED&&etaCode==2&&now-dataStamp<=120&&now-etaEpoch<=30;
  if(fresh){char n[8];snprintf(n,sizeof(n),"%d",max(0,(int)ceil((etaEpoch-now)/60.)));bigNumber(n,10,126,108,58);message="分鐘到";}
  else{bigNumber("--",10,126,108,58);if(WiFi.status()==WL_CONNECTED)message=etaCode==1?"未有預報":etaCode==-3?"資料過期":etaCode<0?"更新失敗":"連線中";}
@@ -107,10 +107,10 @@ void drawMain(){textBG=BG;lcd.fillScreen(BG);drawPlate();
  char clockText[6]="--:--";if(now>1700000000){time_t hk=now+28800;tm t={};gmtime_r(&hk,&t);snprintf(clockText,sizeof(clockText),"%02d:%02d",t.tm_hour,t.tm_min);}label(134,1,clockText,20);
  drawMap();
  updateAnimation();
- lcd.fillRoundRect(12,204,296,28,7,alarmOn?RED:INK);textBG=alarmOn?RED:INK;centered(12,210,296,alarmOn?"準備出門！按一下停止":cfg.armed?"提醒已開 · 按一下關閉":"按一下開啟到站提醒",16,alarmOn?PAPER:BG);
+ lcd.fillRoundRect(12,204,296,28,7,alarmOn?RED:INK);textBG=alarmOn?RED:INK;centered(12,210,296,alarmOn?"停止":cfg.armed?"取消提醒":"提醒我",16,alarmOn?PAPER:BG);
  textBG=BG;if(alarmOn)lcd.drawRect(0,0,320,240,RED);
 }
-void drawMap(){markerPainted=false;mapActualRoad=false;if(activeRoad.valid&&activeRoad.gen==cfg.gen){drawDownloadedMap();return;}lcd.fillRoundRect(134,35,174,140,10,MAP);textBG=MAP;centered(134,92,174,roadTriedGen==cfg.gen?"路線圖暫缺":"載入路線圖",16);textBG=BG;lcd.fillRect(134,175,174,27,BG);label(136,185,"沿路最多 3km",12);}
+void drawMap(){markerPainted=false;mapActualRoad=false;if(activeRoad.valid&&activeRoad.gen==cfg.gen){drawDownloadedMap();return;}lcd.fillRoundRect(134,35,174,140,10,MAP);textBG=MAP;centered(134,92,174,roadTriedGen==cfg.gen?"路線圖暫缺":"載入中",16);textBG=BG;lcd.fillRect(134,175,174,27,BG);label(136,185,"3km · 估算",12);}
 #include "map_render.inc"
 void restoreMarker(){if(markerPainted)drawMap();markerPainted=false;}
 void updateAnimation(){

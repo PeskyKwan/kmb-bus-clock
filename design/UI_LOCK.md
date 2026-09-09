@@ -42,3 +42,6 @@ Sum requested a warmer cream background, restored Hong Kong clock, compact route
 
 ## Approved layout refinement — 2026-09-09
 Sum requested two top-level settings categories (Bus/reminders and Device), explicit Auto/Fixed day/Fixed night modes, a muted blue night map matching a pale blue day map, clock removed from the ETA area, station text matching the top plate heading, and a5–10% larger plate. Implemented120px plate from112px (+7.1%),12px station text with safe-width ellipsis, clock above destination in right header. ETA and minutes stand alone. Supersedes below-ETA clock placement.
+
+## Approved simplicity correction — 2026-09-10
+Mode taps immediately persist; use自動/日間/深色, integer brightness and concise labels throughout. Bespoke drawn back arrow/settings mark replace those labels. Preserve map174×140, top clock and primary ETA.
