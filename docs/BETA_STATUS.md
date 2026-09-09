@@ -27,3 +27,9 @@ No changes to the live KMB Brain website are required to use this project.
 -2A at Ngau Tau Kok: autonomous road download/matching PASS,73 cropped points, live ETA PASS.
 -Framebuffer/renderer verified on device: blank key-page tap0 transmitted tiles; entering a key2/300 tiles; idle animation54 tiles over20s (crossing the old15s refresh interval), no full-frame clear. Palette preserves115 exact UI/antialias colors. Manual visual acceptance pending.
 -General geometry matches up to3 stops in route order within about150m, keeps intermediate bends and uniform scale; up to2048 source points and256 displayed points. Missing data falls back honestly. Data is fetched again after reboot/route changes; no persistent road cache yet.
+
+## Approved3km approach window
+- Fixed3-stop framing replaced by up to3km measured along the incoming road, keeping geographic direction and all matched upstream station dots (up to64 capacity), with up to3 key labels. Nearby origin limits the segment. No walking/preparation logic added.
+- Source simplification checks all intermediate points against~2m deviation and keeps vertices no farther than80m apart; this permits dense92 data to fit in memory. Host fixtures:2A at Ngau Tau Kok has~982m available;92 Pak Sha Wan has3000m.
+
+- Final on-device3km-version checks:2A near route origin displays982.4m,3 markers and31 rendered points; ETA/display ready. Blank tap0tiles, key entry2/300,20s idle16tiles. Route-stop data is reused from validation; failed map loads retry after30s.

@@ -15,7 +15,7 @@ The acceptance archive above stays local and is intentionally excluded from the 
 - Upper-left circular red bus-stop plate, tilted left about3degrees, white route-number panel with centred number and station below; no pole.
 - Large smooth dark ETA digits under the plate; smaller minutes label.
 - Destination along the top, separate dark Settings button at upper-right.
-- Right-side compact north-up three-stop map, restrained labels and current-stop emphasis.
+- Right-side compact north-up route map, restrained labels and current-stop emphasis.
 - Bottom full-width rounded reminder/dismiss button.
 - Smooth antialiased Chinese/Latin fonts, consistent intentional sizing hierarchy; no return to1-bit jagged glyphs or mismatched generic text.
 - Honest map/ETA status. Never fabricate a GPS bus position. Preserve existing distinction between sourced92 road map and other-route station-position schematics.
@@ -32,3 +32,7 @@ Sum requested restoring the cute bus animation in live mode using ETA estimation
 ## Approved native settings — 2026-09-09
 
 Sum approved the four-entry settings preview and a numeric/letter route keypad. Native settings may add these subpages without altering the locked main display. Only explicit Back exits; changes are staged until Save.
+
+## Approved route-distance window — 2026-09-09
+
+Sum approved replacing fixed three-stop framing with up to3km measured backwards along the incoming route from the boarding stop. Preserve true orientation; the boarding stop may lie on any side. Show along-route stop markers without a fixed station count; keep name labels selective for readability. Do not add preparation/walking-time calculations. This supersedes the earlier fixed92/three-stop map exception.

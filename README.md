@@ -1,6 +1,6 @@
 # KMB Bus Clock 🚌
 
-A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a tilted red stop plate, large ETA, a compact three-stop map, and a touch reminder button.
+A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a tilted red stop plate, large ETA, a compact approach map, and a touch reminder button.
 
 **Public source beta.** Independent of [KMB Brain](https://github.com/hijapego1/kmb-brain). No integration or deployment dependency on that project. Not affiliated with or endorsed by KMB.
 
@@ -14,7 +14,7 @@ A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a
 - One-shot **visual** reminder: arm it, receive one alert, tap to dismiss. Arm again for the next trip.
 - Smooth Chinese/Latin fonts and the approved compact layout.
 - A small animated bus driven by the real ETA countdown, explicitly labelled as an estimate.
-- Original illustrated92/Pak Sha Wan map plus automatic road sections for matching routes from TD/CSDI-derived geometry. Three selected stops and intervening bends fit north-up at a uniform scale; labels omit stop codes and avoid overlap. Missing/mismatched/oversized geometry falls back to a labelled schematic.
+- Automatic road sections extending up to3km upstream along the selected bus route, ending at the boarding stop. All matching upstream stops inside the section are drawn as dots, with up to3 key name labels. Bends and east/west/north/south orientation are preserved at uniform scale. A nearby route origin limits the available length. Missing/mismatched/oversized geometry falls back to a labelled schematic.
 - Buffered rendering sends only changed16×16 tiles; keypresses and ETA refreshes no longer clear the physical screen first.
 
 **Important beta limits:** audio is not implemented; the board has no attached speaker. No live bus GPS is supplied. General maps have been verified on2A, but broader route/variant coverage, very long routes and reminder schedules still need testing. Never use this as your only way to decide when to catch a bus.

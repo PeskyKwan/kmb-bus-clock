@@ -1,27 +1,29 @@
-# Three-stop maps: current behavior and planned fitting
+# Route map window
 
-The display's map panel is compact and fixed in the approved layout. The *geographic viewport* must adapt to the selected journey, not force every journey into the Pak Sha Wan example.
+## Approved behavior
 
-## Current beta after automatic-map implementation
+From the selected boarding stop, follow the incoming route backwards for **up to3km of road distance**. This is not a3km straight-line radius and is not a fixed number of stations. If the route begins closer than3km, show the available section from its origin; do not invent a preceding road.
 
-- The illustrated 92/Pak Sha Wan section is a static raster made from OSM geometry and official KMB stop coordinates.
-- Other selections now look up a candidate TD route ID, download CSDI-derived geometry through HK Bus WayPoints Crawling, match the three stops in travel order, include the intervening bends and fit at one uniform scale. North remains up; direction is route order.2A at Ngau Tau Kok has passed on-device.
-- Names are stripped of stop codes and placed with collision checks. No matching source, a match farther than about150m, a source beyond2048 vertices, or missing network/data falls back to the explicitly labelled schematic. The fallback's original aspect limitations remain; the real-road path uses uniform scaling.
-- Live mode now includes a user-requested **illustrative ETA-driven bus marker**. The last10minutes are normalized along the visible path; longer waits remain at the start. This is not a measured vehicle position, stop passage, speed, or travel-time model. The caption says ETA估算. Stale/null/offline data hides it; large forecast revisions reposition it. General road fitting remains unfinished.
+Keep north at the top and preserve real east/west/north/south orientation, diagonals and bends. North-up does **not** mean the bus moves north. The selected stop can naturally sit on any side of the panel. Use one scale for both axes and include all intervening bends in the bounds.
 
-## Design rules and remaining coverage tests
+All matched upstream stops within the section are dots (64-marker safety capacity). Up to3 key names are labelled to keep the small display legible. No preparation-time, walking-time or departure-planning calculation is part of this feature. Existing reminder settings remain separate.
 
-1. Select the boarding stop and up to two preceding stops from the chosen direction **and service variant**. At the start of a route, show only the stops that actually exist.
-2. Obtain the route section connecting those stops, including bends between them. Include the section's geometry in the bounds, not just the three stop points; otherwise a U-turn or long curve can be clipped.
-3. Project geographic coordinates consistently (Mercator or local metric projection). Keep north up. Do not stretch latitude/longitude independently to fill the rectangle.
-4. Reserve an inset for station dots, bus/direction symbols, text and the north marker. Compute `scale = min(usableWidth / boundsWidth, usableHeight / boundsHeight)` and centre the result. One uniform scale preserves vertical, horizontal and diagonal orientation.
-5. Fit once when the route/boarding stop changes; keep the viewport stable while ETA refreshes. Use minimum bounds for coincident or extremely close stops to avoid division by zero or excessive zoom.
-6. Place station names with measured text bounds and alternate offsets/leader lines. If labels still overlap, use numbered station dots plus a compact label key rather than shrinking text until unreadable. A long-name/overlap layout needs visual review against the locked UI.
-7. Use a direction arrow based on route order. U-shaped and crossing sections must follow the selected trip's sequence, not sort road points by latitude or imply that every journey runs downward.
-8. Cache route geometry after selection. If geometry is unavailable, retain the explicit station-position schematic; never invent a road line or show the previous route's map under new labels.
+## Implementation
 
-## Cases to verify before release
+- Candidate TD IDs come from the dated route index; CSDI-derived road geometry is downloaded through HK Bus WayPoints Crawling over verified HTTPS.
+- The3 stored nearby stops remain **matching anchors only**, locating the boarding stop on the correct route passage. They do not limit the visible window.
+- Validated KMB route-stop order is reused for upstream markers. Stop coordinates/name offsets use the local catalog. Unknown new stop metadata may require a catalog rebuild.
+- A backward walk along the polyline finds the3km boundary and interpolates the exact cut within a segment. Source coordinates/rounding mean physical distance remains approximate.
+- Streaming simplification checks all pending intermediate points against an approximate2m deviation and preserves vertices no farther than80m apart. This accommodates densely sampled roads without filling ESP32 memory.
+- Limits:512KB downloaded geometry,2048 retained geographic vertices,256 rendered points,64 station dots. Unsupported/missing/mismatched data shows an unavailable map and retries after30seconds; it does not silently revert to a fixed3-stop diagram.
+- The previous92 static-map exception has been removed. All routes use the same rule.
 
-Vertical, horizontal, both diagonal slopes, far-apart stops, very close/coincident stops, loops/U-turns, road sections extending outside stop-only bounds, long labels, first/second stop, opposite direction, express variant skipping stops, and loss of map data.
+## Animation is separate
 
-The UI panel, plate, fonts and controls remain unchanged by the fitting algorithm. The current marker remains visibly approximate. A more geographically meaningful position model requires separately validated data; a real basemap does not make the vehicle position real.
+The bus marker is still a labelled ETA countdown illustration. The final10minutes map to the visible path; it is **not GPS, measured speed or proof of stop passage**. Changing the map window does not change the reminder or make the marker's position factual.
+
+## Verification and remaining coverage
+
+Host tests cover vertical, horizontal, reversed horizontal, diagonal, U-shaped, near-origin and exact-distance clipping, plus simplification and tile-change checks. Actual source fixtures show about982m available for2A at Ngau Tau Kok and3000m for92 at Pak Sha Wan. On-device2A loaded the near-origin section with3 markers; display/ETA and partial-refresh tests passed.
+
+Broader variants, unusual loops/repeated passages, very dense station clusters, long names, temporary diversions, missing source data and routes beyond the safety limits remain beta coverage areas.

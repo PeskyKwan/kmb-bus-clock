@@ -4,23 +4,12 @@
 #include <algorithm>
 struct GeoPoint{float lng,lat;};
 struct MapPoint{int16_t x,y;};
-struct RoadData{bool valid=false;uint32_t gen=0;int count=0;MapPoint points[256];MapPoint stops[3];};
+constexpr int maxMapStops=64;
+struct RoadData{bool valid=false;uint32_t gen=0;int count=0;MapPoint points[256];MapPoint stops[maxMapStops];uint32_t labels[maxMapStops];int stopCount=0;float meters=0;};
+struct RoadWindow{int first=0,last=0;GeoPoint start{};float meters=0;};
+struct WindowStop{GeoPoint point;uint32_t label;};
 inline float geoDistance2(GeoPoint a,GeoPoint b){float x=(a.lng-b.lng)*.925f,y=a.lat-b.lat;return x*x+y*y;}
-// Match stops in travel order, including looping paths, without sorting by latitude.
-inline bool fitRoad(const GeoPoint*points,int count,const GeoPoint*stops,int stopCount,RoadData&out){
- if(count<2||stopCount<1||stopCount>3)return false;
- float best[3]={1e9f,1e9f,1e9f};int picked[3][3]={};
- for(int i=0;i<count;i++){for(int s=0;s<stopCount;s++){float v=geoDistance2(points[i],stops[s])+(s?best[s-1]:0);if(v<best[s]){best[s]=v;if(s)for(int j=0;j<s;j++)picked[s][j]=picked[s-1][j];picked[s][s]=i;}}}
- int first=picked[stopCount-1][0],last=picked[stopCount-1][stopCount-1];
- for(int i=0;i<stopCount;i++)if(geoDistance2(points[picked[stopCount-1][i]],stops[i])>0.00000182f)return false; // about150m
- if(last<=first)return false;
- float minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
- auto bounds=[&](GeoPoint p){float x=p.lng*.925f,y=-p.lat;minx=std::min(minx,x);maxx=std::max(maxx,x);miny=std::min(miny,y);maxy=std::max(maxy,y);};
- for(int i=first;i<=last;i++)bounds(points[i]);for(int i=0;i<stopCount;i++)bounds(stops[i]);
- float dx=std::max(maxx-minx,.00005f),dy=std::max(maxy-miny,.00005f),scale=std::min(104.0f/dx,101.0f/dy);
- float ox=150+(104-dx*scale)/2,oy=49+(101-dy*scale)/2;
- auto project=[&](GeoPoint p){return MapPoint{(int16_t)std::lround(ox+(p.lng*.925f-minx)*scale),(int16_t)std::lround(oy+(-p.lat-miny)*scale)};};
- out.count=0;int span=last-first;int n=std::min(span+1,256);
- for(int j=0;j<n;j++){int index=first+(int)std::lround(j*span/float(n-1));MapPoint p=project(points[index]);if(out.count&&out.points[out.count-1].x==p.x&&out.points[out.count-1].y==p.y)continue;out.points[out.count++]=p;}
- for(int j=0;j<stopCount;j++)out.stops[j]=project(stops[j]);out.valid=out.count>=2;return out.valid;
-}
+inline float geoMeters(GeoPoint a,GeoPoint b){return std::sqrt(geoDistance2(a,b))*111320.0f;}
+inline bool matchRoadEnd(const GeoPoint*p,int n,const GeoPoint*s,int ns,int&end){if(n<1||ns<1||ns>3)return false;float best[3]={1e9f,1e9f,1e9f};int chosen[3][3]={};for(int i=0;i<n;i++)for(int k=0;k<ns;k++){float v=geoDistance2(p[i],s[k])+(k?best[k-1]:0);if(v<best[k]){best[k]=v;if(k)for(int j=0;j<k;j++)chosen[k][j]=chosen[k-1][j];chosen[k][k]=i;}}for(int k=0;k<ns;k++)if(geoMeters(p[chosen[ns-1][k]],s[k])>150)return false;end=chosen[ns-1][ns-1];return true;}
+inline RoadWindow upstreamWindow(const GeoPoint*p,int end,float budget=3000){RoadWindow w;w.first=w.last=end;w.start=p[end];float left=std::max(0.0f,budget);for(int i=end;i>0;i--){float d=geoMeters(p[i-1],p[i]);if(d>left&&d>0){float f=left/d;w.first=i;w.start={p[i].lng+(p[i-1].lng-p[i].lng)*f,p[i].lat+(p[i-1].lat-p[i].lat)*f};w.meters+=left;return w;}left-=d;w.meters+=d;w.first=i-1;w.start=p[i-1];}return w;}
+inline bool projectWindow(const GeoPoint*p,const RoadWindow&w,const WindowStop*s,int ns,RoadData&out){if(ns<1||ns>maxMapStops)return false;float minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;auto bounds=[&](GeoPoint g){float x=g.lng*.925f,y=-g.lat;minx=std::min(minx,x);maxx=std::max(maxx,x);miny=std::min(miny,y);maxy=std::max(maxy,y);};bounds(w.start);for(int i=w.first;i<=w.last;i++)bounds(p[i]);for(int i=0;i<ns;i++)bounds(s[i].point);float dx=std::max(maxx-minx,.00005f),dy=std::max(maxy-miny,.00005f),scale=std::min(104.f/dx,101.f/dy),ox=150+(104-dx*scale)/2,oy=49+(101-dy*scale)/2;auto project=[&](GeoPoint g){return MapPoint{(int16_t)std::lround(ox+(g.lng*.925f-minx)*scale),(int16_t)std::lround(oy+(-g.lat-miny)*scale)};};out.count=0;out.points[out.count++]=project(w.start);int span=w.last-w.first,n=std::min(span+1,255);for(int j=0;j<n;j++){int i=w.first+(n>1?(int)std::lround(j*span/float(n-1)):0);MapPoint m=project(p[i]);if(m.x==out.points[out.count-1].x&&m.y==out.points[out.count-1].y)continue;out.points[out.count++]=m;}out.stopCount=ns;out.meters=w.meters;for(int i=0;i<ns;i++){out.stops[i]=project(s[i].point);out.labels[i]=s[i].label;}out.valid=true;return true;}

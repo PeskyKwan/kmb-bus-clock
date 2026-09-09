@@ -20,11 +20,12 @@ try:
  while True:
   d=state()
   if 'displayReady' in d:assert d['displayReady'],'framebuffer allocation failed'
-  print({k:d.get(k) for k in ['connected','etaCode','roadReady','displayReady','apiDiagnostic','heap','largestHeap']},flush=True)
+  print({k:d.get(k) for k in ['connected','etaCode','roadReady','displayReady','apiDiagnostic','roadDiagnostic','heap','largestHeap']},flush=True)
   if d.get('connected') and d.get('etaCode')==2 and d.get('roadReady'):break
   if time.monotonic()>end:raise RuntimeError({k:d.get(k) for k in ['connected','etaCode','roadReady','roadPoints','heap']})
   time.sleep(1)
- print('LIVE ROAD / DISPLAY PASS', {k:d.get(k) for k in ['route','roadPoints','heap','displayReady']},flush=True)
+ assert 0<=d['mapMeters']<=3001 and d['mapStops']>=1
+ print('LIVE ROAD / DISPLAY PASS', {k:d.get(k) for k in ['route','roadPoints','mapStops','mapMeters','heap','displayReady']},flush=True)
  ui('open');ui('touch',x=50,y=80);ui('touch',x=50,y=215);time.sleep(.5)
  before=state();ui('touch',x=310,y=42);time.sleep(.5);after=state();delta=after['sentTiles']-before['sentTiles'];assert delta==0,delta
  print('Blank tap:0 changed tiles PASS',flush=True)

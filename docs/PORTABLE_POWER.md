@@ -1,5 +1,7 @@
 # Portable power research — 2026-09-09
 
+**Current preference supersedes the earlier target below:** primarily home use, avoiding a permanently connected USB cable. Battery work is deferred; thin travel enclosure/12h is not an active requirement.
+
 Target agreed with Sum: thin integrated enclosure and about12hours without USB power. Battery power does not provide internet: live ETA still requires Wi-Fi/a phone hotspot.
 
 ## Recommendation
