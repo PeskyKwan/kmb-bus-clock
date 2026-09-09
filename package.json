@@ -1,0 +1,1 @@
+{"name":"kmb-bus-clock-installer","private":true,"type":"module","scripts":{"build:installer":"esbuild installer/src/app.js --bundle --format=esm --target=es2022 --outfile=installer/app.js"},"dependencies":{"esptool-js":"0.6.1","spark-md5":"3.0.2"},"devDependencies":{"esbuild":"0.25.9"}}

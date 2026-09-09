@@ -14,14 +14,14 @@
 - Local-network web-form operation across phone/browser combinations. Saved form selections do not fully pre-populate yet.
 - Audio/speech/volume and scheduling are not implemented; reminders are visual and one-shot.
 - Other ESP32 boards and operating systems are not device-tested.
-- Public builds need local font assets. No precompiled binary or font files are redistributed in this source release.
+- Public builds need local font assets. Public installer binaries now use OFL Noto fonts; see INSTALLER.md.
 
 No changes to the live KMB Brain website are required to use this project.
 
 ## Native settings update
 - Four native setting pages and route keypad added; numeric/letter input and pagination host checks pass.
 - A compact route candidate index is followed by live per-variant validation; up to32 variants and256 stops. New route numbers fall back to the regular service in both directions; regenerate the index to discover newly introduced variants. Stop names use a bundled cache for fast lists, and the selected stop plus predecessors are re-read from the API before staging.
-- On-device USB hit-target test passed: numeric keypad92,4 live variants,29 stops, pagination to Pak Sha Wan, live metadata and unsaved-draft protection. Manual stylus/visual acceptance of the new settings pages remains pending. Wi-Fi password entry remains on phone/computer.
+- On-device USB hit-target test passed: numeric keypad92,4 live variants,29 stops, pagination to Pak Sha Wan, live metadata and unsaved-draft protection. Manual stylus/visual acceptance of the new settings pages remains pending. Wi-Fi scan/password entry is now available on-device and via browser USB.
 
 ## General roads and flicker fixes
 -2A at Ngau Tau Kok: autonomous road download/matching PASS,73 cropped points, live ETA PASS.

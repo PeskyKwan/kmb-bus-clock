@@ -1,0 +1,12 @@
+[
+  {
+    "file": "NotoSansTC.ttf",
+    "url": "https://raw.githubusercontent.com/google/fonts/b950a7257470b900078f2bf3223823a8602de7e1/ofl/notosanstc/NotoSansTC%5Bwght%5D.ttf",
+    "sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f"
+  },
+  {
+    "file": "NotoSans.ttf",
+    "url": "https://raw.githubusercontent.com/google/fonts/2984c575fdce412ee02b2baaba67672b9a9434d8/ofl/notosans/NotoSans%5Bwdth%2Cwght%5D.ttf",
+    "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d"
+  }
+]

@@ -2,13 +2,23 @@
 
 A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a tilted red stop plate, large ETA, a compact approach map, and a touch reminder button.
 
-**Public source beta.** Independent of [KMB Brain](https://github.com/hijapego1/kmb-brain). No integration or deployment dependency on that project. Not affiliated with or endorsed by KMB.
+**Public beta with a browser installer.** Independent of [KMB Brain](https://github.com/hijapego1/kmb-brain). No integration or deployment dependency on that project. Not affiliated with or endorsed by KMB.
+
+## Installation
+
+**[Open the installer](https://peskykwan.github.io/kmb-bus-clock/)** on desktop Chrome or Edge.
+
+1. Connect the correct E32R28T-1 board with a USB data cable and click Install.
+2. Set Wi-Fi on the website or on the screen: gear → 裝置 → Wi-Fi.
+3. Tap the first-boot calibration crosses, then choose your route, direction and stop on the screen.
+
+No AI assistant, GitHub account or programming tools needed. The browser asks you to select USB Serial. [Full setup and recovery guide](docs/INSTALLER.md).
 
 ## What works on the tested board
 
 - Live KMB ETA over certificate-verified HTTPS, with Wi-Fi reconnection and stored route settings.
 - Native touch settings: numeric/letter route keypad → live destination/service variants → paged boarding stops. Settings stay as a draft until Save.
-- A local web form remains available for Wi-Fi credentials and alternative configuration.
+- On-device network scan and full password keyboard; connect/cancel with rollback to the old network on failure. Browser USB Wi-Fi setup is also available.
 - First-use three-point touch calibration, saved across application updates.
 - Configurable lead time and screen brightness. Warm cream day mode, dark green night mode, automatic sunrise/sunset switching, and a synchronized Hong Kong clock.
 - One-shot **visual** reminder: arm it, receive one alert, tap to dismiss. Arm again for the next trip.
@@ -45,7 +55,7 @@ python tools/prepare_assets.py
 pio run
 ```
 
-Font raster headers are generated locally and **not redistributed**. On macOS the generator defaults to installed STHeiti Medium and Arial Bold. On another system, provide locally licensed font files with Traditional Chinese coverage:
+Public installer firmware embeds Noto Sans TC/Noto Sans glyphs under SIL OFL; license files are included. `python tools/build_public_release.py` builds that package reproducibly with pinned font downloads. Custom local raster headers remain generated files. On macOS the generator defaults to installed STHeiti Medium and Arial Bold. On another system, provide locally licensed font files with Traditional Chinese coverage:
 
 ```sh
 export KMB_CJK_FONT=/path/to/your/traditional-chinese-font.ttf
@@ -86,17 +96,9 @@ After the initial partition layout is installed, application-only updates write 
 
 ## First setup
 
-1. Tap the three calibration targets on the display.
-2. Run `python setup/server.py` on the USB-connected computer. If auto-detection is ambiguous, set `KMB_SERIAL_PORT` explicitly.
-3. Open **http://127.0.0.1:8767** on that computer.
-4. Enter a **2.4 GHz** Wi-Fi network, search a route, choose direction/service and boarding stop, then save. Passwords are sent to the device, not written to a computer-side file or log.
-5. Once connected, the display works without the computer. Stop the bridge with Ctrl-C and close its browser tab.
+Use the installer above, or the screen's gear → 裝置 → Wi-Fi to scan/select a2.4GHz network and enter its password. Aa/123/符號 switch keyboard pages. The new credentials are saved only after a successful connection; failure/cancel restores the old network. The current and previous successful networks are remembered; select either to reconnect with an empty password.
 
-The display's **設定** button opens **巴士與提醒** (route/stop and alert) and **裝置設定** (display mode, brightness and Wi-Fi). Tap the route section for a0–9 keypad, switch toABC for only the next letters found in the route catalog (92 offers R; no full A–Z pages), search, select the direction/service variant, then choose a stop. Use the explicit Back button; tapping blank space no longer exits. **Save settings** applies route/brightness drafts. Display mode is saved immediately on selection. Back from the settings home discards it. Appearance offers 自動 / 日間 / 夜間; mode taps save immediately; Auto uses calculated local sunrise/sunset. See [appearance details](docs/APPEARANCE.md).
-
-The Wi-Fi section shows the local-network URL and a per-boot six-digit settings code. Use these to change network credentials from the same network. The web form is local HTTP, intended only for a trusted LAN; do not port-forward or expose it publicly. The code guards configuration writes. Wi-Fi credentials reside in device NVS, which is not encrypted by this beta.
-
-Leaving the Wi-Fi inputs empty preserves the saved connection. A newly selected route must be searched before saving. Saved values are not yet fully pre-populated in the web form; check your route, direction, stop and reminder settings each time.
+Gear → 巴士 → 路線 opens the route keypad; choose direction/service and boarding stop, then 儲存. Route and brightness edits use Save; 自動/日間/夜間 mode taps save immediately. The legacy same-LAN configuration form and optional `setup/server.py` bridge remain available for development, but are not needed for the normal install flow.
 
 ## What the display means
 

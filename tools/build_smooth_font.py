@@ -3,7 +3,7 @@ from PIL import Image,ImageDraw,ImageFont
 import json,math,os
 r=Path(__file__).resolve().parents[1]
 chars=set(''.join(s['name_tc'] for s in json.loads((r/'docs/stops.json').read_text())['data']))
-chars.update((r/'src/main.cpp').read_text());chars.update((r/'src/native_settings.inc').read_text());chars.update((r/'src/map_render.inc').read_text());chars.update(chr(i) for i in range(32,127));chars.update('道路圖預估未有預報等待同步分鐘到')
+chars.update((r/'src/main.cpp').read_text());chars.update((r/'src/native_settings.inc').read_text());chars.update((r/'src/map_render.inc').read_text());chars.update((r/'src/wifi_setup.inc').read_text());chars.update((r/'src/wifi_keyboard.inc').read_text());chars.update(chr(i) for i in range(32,127));chars.update('道路圖預估未有預報等待同步分鐘到')
 chars=sorted({c for c in chars if 32<=ord(c)<65536},key=ord)
 fonts=[os.environ.get('KMB_CJK_FONT','/System/Library/Fonts/STHeiti Medium.ttc'),os.environ.get('KMB_LATIN_FONT','/System/Library/Fonts/Supplemental/Arial Bold.ttf')]
 out=['#pragma once','#include <Arduino.h>','const uint16_t aaCodes[] PROGMEM={'+','.join(str(ord(c)) for c in chars)+'};','constexpr int aaCount=sizeof(aaCodes)/sizeof(aaCodes[0]);']
@@ -12,6 +12,9 @@ for sz in [12,16,20,39,67]:
  values=[];widths=[]
  for c in cs:
   f=ImageFont.truetype(fonts[1 if ord(c)<128 else 0],sz*3)
+  try:
+   axes=f.get_variation_axes();f.set_variation_by_axes([500 if j==0 and ord(c)>=128 else 700 if j==0 else axis['default'] for j,axis in enumerate(axes)])
+  except OSError:pass
   advance=min(sz,math.ceil(f.getlength(c)/3)) if ord(c)<128 else sz
   im=Image.new('L',(sz*3,sz*3));d=ImageDraw.Draw(im);box=d.textbbox((0,0),c,font=f);d.text(((advance*3-(box[2]-box[0]))/2-box[0],(sz*3-(box[3]-box[1]))/2-box[1]),c,font=f,fill=255)
   im=im.resize((sz,sz),Image.Resampling.LANCZOS);vals=[round(v/17) for v in im.getdata()]

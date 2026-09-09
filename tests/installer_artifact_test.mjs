@@ -1,0 +1,4 @@
+import {readFileSync} from 'node:fs';import {createHash} from 'node:crypto';import assert from 'node:assert/strict';
+const manifest=JSON.parse(readFileSync('installer/manifest.json'));assert.equal(manifest.chip,'ESP32');assert.equal(manifest.parts.length,4);
+for(const p of manifest.parts){const data=readFileSync('installer/'+p.path);assert.equal(data.length,p.size);assert.equal(createHash('sha256').update(data).digest('hex'),p.sha256);assert.ok(p.offset+p.size<=0x9000||p.offset>=0xe000,'NVS must not be overwritten');}
+assert.ok(manifest.parts.at(-1).size<0x300000);const src=readFileSync('installer/src/app.js','utf8');assert.ok(src.includes('eraseAll:false'));assert.ok(src.includes("loader.chip.CHIP_NAME!=='ESP32'"));assert.ok(!/localStorage|sessionStorage|console\.log/.test(src));console.log('Installer hashes, board guard, NVS bounds, no credential storage PASS');

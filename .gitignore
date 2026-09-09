@@ -38,3 +38,7 @@ src/display_palette.h
 assets/palette-preview.png
 
 src/map_sources.h
+
+node_modules/
+fonts/*.ttf
+!installer/firmware/*.bin
