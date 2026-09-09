@@ -45,3 +45,6 @@ Sum requested two top-level settings categories (Bus/reminders and Device), expl
 
 ## Approved simplicity correction — 2026-09-10
 Mode taps immediately persist; use自動/日間/深色, integer brightness and concise labels throughout. Bespoke drawn back arrow/settings mark replace those labels. Preserve map174×140, top clock and primary ETA.
+
+## User-approved map detail —2026-09-10
+Use夜間 instead of深色. Gear must be recognizable (stock allowed if needed); current filled toothed ring replaces the sun-like outline. Subtle decorative grid and a red travel-direction arrow authorized; preserve174×140 map bounds. Arrow follows route order, not fixed north/south or GPS.

@@ -37,7 +37,7 @@ void drawSettings(){textBG=BG;lcd.fillScreen(BG);const char*title=nativePage==NS
  if(nativePage==NS_HOME){nativeButton(12,48,296,63,"巴士",FEATURE,20);nativeButton(12,123,296,63,"裝置",PANEL,20);nativeButton(12,201,296,32,nativeSaved?"已儲存":"儲存",INK);}
  else if(nativePage==NS_BUS){nativeButton(12,48,296,62,"",FEATURE);textBG=FEATURE;label(24,54,"路線",12);label(24,76,(String(draft.route)+" · "+shortStop(draft.stops[draft.count-1].name)).c_str(),16,INK,270);textBG=BG;nativeButton(12,122,296,62,"",PANEL);textBG=PANEL;label(24,128,"提醒",12);label(24,150,(String("提前 ")+draft.threshold+" 分鐘").c_str(),16);textBG=BG;nativeButton(12,201,296,32,nativeSaved?"已儲存":"儲存",INK);}
  else if(nativePage==NS_DEVICE){nativeButton(12,44,296,43,"模式",PANEL);nativeButton(12,95,296,43,"亮度",PANEL);nativeButton(12,146,296,43,"Wi-Fi",PANEL);nativeButton(12,201,296,32,nativeSaved?"已儲存":"儲存",INK);}
- else if(nativePage==NS_THEME){const char* modes[]={"自動","日間","深色"};for(int i=0;i<3;i++)nativeButton(12,45+i*49,296,42,modes[i],i==draftTheme?INK:PANEL,16);nativeButton(12,201,296,32,"完成",INK);}
+ else if(nativePage==NS_THEME){const char* modes[]={"自動","日間","夜間"};for(int i=0;i<3;i++)nativeButton(12,45+i*49,296,42,modes[i],i==draftTheme?INK:PANEL,16);nativeButton(12,201,296,32,"完成",INK);}
 
  else if(nativePage==NS_KEYS){lcd.fillRoundRect(100,39,206,31,5,FIELD);textBG=FIELD;label(110,43,nativeRoute,20);textBG=BG;label(16,43,"路線",16);
  if(!nativeLetters){const char*keys[]={"1","2","3","4","5","6","7","8","9","ABC","0","刪除"};for(int i=0;i<12;i++)nativeButton(12+(i%3)*101,76+(i/3)*30,94,27,keys[i],PANEL,16);}

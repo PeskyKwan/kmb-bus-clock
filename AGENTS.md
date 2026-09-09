@@ -11,5 +11,8 @@ Read `design/UI_LOCK.md` before changing this project. If the maintainer-local `
 - Preserve Wi-Fi credentials, saved route and touch calibration during firmware updates. Never commit credentials or raw device NVS backups.
 
 ## Board UI simplicity — user rule 2026-09-10
-- Minimal on-board text everywhere. Prefer short Chinese labels (自動/日間/深色), whole-number percentages, no redundant explanations. Use bespoke simple drawn symbols for unambiguous actions; no stock icons or emoji. Keep explanations in documentation, not the small screen.
+- Minimal on-board text everywhere. Prefer short Chinese labels (自動/日間/夜間), whole-number percentages, no redundant explanations. Use bespoke simple drawn symbols for unambiguous actions; no stock icons or emoji. Keep explanations in documentation, not the small screen.
 - Mode selection saves immediately; returning to main must preserve it. Route drafts still require Save. Keep current174×140 map area and clock position; ETA remains visually primary.
+
+## User-approved map detail —2026-09-10
+Use夜間 instead of深色. Gear must be recognizable (stock allowed if needed); current filled toothed ring replaces the sun-like outline. Subtle decorative grid and a red travel-direction arrow authorized; preserve174×140 map bounds. Arrow follows route order, not fixed north/south or GPS.
