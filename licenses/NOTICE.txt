@@ -1,0 +1,8 @@
+KMB Bus Clock code: MIT. https://github.com/PeskyKwan/kmb-bus-clock
+Public firmware glyphs: Noto Sans TC and Noto Sans, SIL Open Font License 1.1 (see included OFL files).
+Web flasher: esptool-js 0.6.1, Apache-2.0; SparkMD5 3.0.2, MIT.
+Compression: pako 2.1.0, MIT and Zlib (see pako.txt).
+Bus data: KMB open data. Road geometry: HK Bus Crawling@2021 / CSDI.
+No Wi-Fi credentials or device/NVS dump is included in the firmware.
+
+Additional bundled dependencies: atob-lite (MIT), tslib (Apache-2.0); license/copyright files are included.
