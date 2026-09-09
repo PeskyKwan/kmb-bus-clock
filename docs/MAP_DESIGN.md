@@ -2,14 +2,14 @@
 
 The display's map panel is compact and fixed in the approved layout. The *geographic viewport* must adapt to the selected journey, not force every journey into the Pak Sha Wan example.
 
-## Current beta, honestly
+## Current beta after automatic-map implementation
 
 - The illustrated 92/Pak Sha Wan section is a static raster made from OSM geometry and official KMB stop coordinates.
-- For other stop selections, three stop coordinates are fitted into a small schematic. It is labelled as a station-position diagram, not a road map.
-- Current fallback uses different x/y scale constants (55 vs95). Although points fit, this can distort diagonal angles and geographic aspect ratio. Label overlaps and long names are not fully handled. Do not describe this as finished universal map support.
+- Other selections now look up a candidate TD route ID, download CSDI-derived geometry through HK Bus WayPoints Crawling, match the three stops in travel order, include the intervening bends and fit at one uniform scale. North remains up; direction is route order.2A at Ngau Tau Kok has passed on-device.
+- Names are stripped of stop codes and placed with collision checks. No matching source, a match farther than about150m, a source beyond2048 vertices, or missing network/data falls back to the explicitly labelled schematic. The fallback's original aspect limitations remain; the real-road path uses uniform scaling.
 - Live mode now includes a user-requested **illustrative ETA-driven bus marker**. The last10minutes are normalized along the visible path; longer waits remain at the start. This is not a measured vehicle position, stop passage, speed, or travel-time model. The caption says ETA估算. Stale/null/offline data hides it; large forecast revisions reposition it. General road fitting remains unfinished.
 
-## Proposed next implementation
+## Design rules and remaining coverage tests
 
 1. Select the boarding stop and up to two preceding stops from the chosen direction **and service variant**. At the start of a route, show only the stops that actually exist.
 2. Obtain the route section connecting those stops, including bends between them. Include the section's geometry in the bounds, not just the three stop points; otherwise a U-turn or long curve can be clipped.

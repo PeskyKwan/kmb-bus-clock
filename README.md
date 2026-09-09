@@ -14,9 +14,10 @@ A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a
 - One-shot **visual** reminder: arm it, receive one alert, tap to dismiss. Arm again for the next trip.
 - Smooth Chinese/Latin fonts and the approved compact layout.
 - A small animated bus driven by the real ETA countdown, explicitly labelled as an estimate.
-- An illustrated road segment for the bundled 92/Pak Sha Wan example. Other locations use a labelled station-position schematic.
+- Original illustrated92/Pak Sha Wan map plus automatic road sections for matching routes from TD/CSDI-derived geometry. Three selected stops and intervening bends fit north-up at a uniform scale; labels omit stop codes and avoid overlap. Missing/mismatched/oversized geometry falls back to a labelled schematic.
+- Buffered rendering sends only changed16×16 tiles; keypresses and ETA refreshes no longer clear the physical screen first.
 
-**Important beta limits:** audio is not implemented; the board has no attached speaker. No live bus GPS is supplied. General road-map fitting, label collision handling, arbitrary-route visual acceptance, and reminder schedules still need work. Never use this as your only way to decide when to catch a bus.
+**Important beta limits:** audio is not implemented; the board has no attached speaker. No live bus GPS is supplied. General maps have been verified on2A, but broader route/variant coverage, very long routes and reminder schedules still need testing. Never use this as your only way to decide when to catch a bus.
 
 ## Hardware
 
@@ -116,15 +117,19 @@ c++ -std=c++17 tests/eta_animation_test.cpp -o /tmp/kmb-animation-tests
 /tmp/kmb-animation-tests
 c++ -std=c++17 tests/native_input_test.cpp -o /tmp/kmb-native-input
 /tmp/kmb-native-input
+c++ -std=c++17 tests/map_render_test.cpp -o /tmp/kmb-map-tests
+/tmp/kmb-map-tests
 python -m py_compile setup/server.py
 pio run
 ```
 
-The12 ETA checks and16 animation checks cover timezone conversion, invalid/null timestamps, stale/future data, offline state, arming and threshold boundaries. They are not a substitute for device, route and real-trip testing.
+The ETA/animation/map/tile checks cover timezone conversion, invalid/null timestamps, stale/future data, offline state, arming and threshold boundaries. They are not a substitute for device, route and real-trip testing.
 
 ## Contributing
 
 Report board model, route/direction/stop, expected vs observed behavior, and a screenshot if useful. **Do not attach Wi-Fi passwords, NVS dumps or full-flash backups.** The visual language and layout are locked as a baseline, not frozen forever: propose improvements separately and get maintainer approval before redesigning. See [UI baseline](design/UI_LOCK.md).
+
+For integrated battery planning, see [portable power research](docs/PORTABLE_POWER.md).
 
 The bare board has a battery connector, not a built-in battery pack. If powered only by USB, unplugging turns it off and stops monitoring; saved settings remain. External battery hardware has not been tested in this beta.
 

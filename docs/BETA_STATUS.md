@@ -22,3 +22,8 @@ No changes to the live KMB Brain website are required to use this project.
 - Four native setting pages and route keypad added; numeric/letter input and pagination host checks pass.
 - A compact route candidate index is followed by live per-variant validation; up to32 variants and256 stops. New route numbers fall back to the regular service in both directions; regenerate the index to discover newly introduced variants. Stop names use a bundled cache for fast lists, and the selected stop plus predecessors are re-read from the API before staging.
 - On-device USB hit-target test passed: numeric keypad92,4 live variants,29 stops, pagination to Pak Sha Wan, live metadata and unsaved-draft protection. Manual stylus/visual acceptance of the new settings pages remains pending. Wi-Fi password entry remains on phone/computer.
+
+## General roads and flicker fixes
+-2A at Ngau Tau Kok: autonomous road download/matching PASS,73 cropped points, live ETA PASS.
+-Framebuffer/renderer verified on device: blank key-page tap0 transmitted tiles; entering a key2/300 tiles; idle animation54 tiles over20s (crossing the old15s refresh interval), no full-frame clear. Palette preserves115 exact UI/antialias colors. Manual visual acceptance pending.
+-General geometry matches up to3 stops in route order within about150m, keeps intermediate bends and uniform scale; up to2048 source points and256 displayed points. Missing data falls back honestly. Data is fetched again after reboot/route changes; no persistent road cache yet.

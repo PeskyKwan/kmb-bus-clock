@@ -33,3 +33,8 @@ tools/build_font.py
 src/stop_catalog.h
 
 src/route_catalog.h
+
+src/display_palette.h
+assets/palette-preview.png
+
+src/map_sources.h
