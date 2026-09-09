@@ -3,7 +3,7 @@ from PIL import Image,ImageDraw,ImageFont
 import json,math,os
 r=Path(__file__).resolve().parents[1]
 chars=set(''.join(s['name_tc'] for s in json.loads((r/'docs/stops.json').read_text())['data']))
-chars.update((r/'src/main.cpp').read_text());chars.update(chr(i) for i in range(32,127));chars.update('道路圖預估未有預報等待同步分鐘到')
+chars.update((r/'src/main.cpp').read_text());chars.update((r/'src/native_settings.inc').read_text());chars.update(chr(i) for i in range(32,127));chars.update('道路圖預估未有預報等待同步分鐘到')
 chars=sorted({c for c in chars if 32<=ord(c)<65536},key=ord)
 fonts=[os.environ.get('KMB_CJK_FONT','/System/Library/Fonts/STHeiti Medium.ttc'),os.environ.get('KMB_LATIN_FONT','/System/Library/Fonts/Supplemental/Arial Bold.ttf')]
 out=['#pragma once','#include <Arduino.h>','const uint16_t aaCodes[] PROGMEM={'+','.join(str(ord(c)) for c in chars)+'};','constexpr int aaCount=sizeof(aaCodes)/sizeof(aaCodes[0]);']

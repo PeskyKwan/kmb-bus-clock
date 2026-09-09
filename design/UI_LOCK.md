@@ -28,3 +28,7 @@ The photographed22-minute arrival is only the acceptance-time value, not a fixtu
 ## Explicitly approved addition — 2026-09-09
 
 Sum requested restoring the cute bus animation in live mode using ETA estimation. A small marker and the ETA估算 caption are authorized additions; the rest of the approved layout/fonts/plate/map remain locked. Marker movement is illustrative, not measured bus location.
+
+## Approved native settings — 2026-09-09
+
+Sum approved the four-entry settings preview and a numeric/letter route keypad. Native settings may add these subpages without altering the locked main display. Only explicit Back exits; changes are staged until Save.

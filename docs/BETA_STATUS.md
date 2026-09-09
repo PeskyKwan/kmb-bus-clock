@@ -17,3 +17,8 @@
 - Public builds need local font assets. No precompiled binary or font files are redistributed in this source release.
 
 No changes to the live KMB Brain website are required to use this project.
+
+## Native settings update
+- Four native setting pages and route keypad added; numeric/letter input and pagination host checks pass.
+- A compact route candidate index is followed by live per-variant validation; up to32 variants and256 stops. New route numbers fall back to the regular service in both directions; regenerate the index to discover newly introduced variants. Stop names use a bundled cache for fast lists, and the selected stop plus predecessors are re-read from the API before staging.
+- On-device USB hit-target test passed: numeric keypad92,4 live variants,29 stops, pagination to Pak Sha Wan, live metadata and unsaved-draft protection. Manual stylus/visual acceptance of the new settings pages remains pending. Wi-Fi password entry remains on phone/computer.

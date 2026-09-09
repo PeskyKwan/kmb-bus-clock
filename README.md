@@ -7,7 +7,8 @@ A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a
 ## What works on the tested board
 
 - Live KMB ETA over certificate-verified HTTPS, with Wi-Fi reconnection and stored route settings.
-- Route → destination/service variant → boarding-stop selection through a local web form.
+- Native touch settings: numeric/letter route keypad → live destination/service variants → paged boarding stops. Settings stay as a draft until Save.
+- A local web form remains available for Wi-Fi credentials and alternative configuration.
 - First-use three-point touch calibration, saved across application updates.
 - Configurable lead time and screen brightness.
 - One-shot **visual** reminder: arm it, receive one alert, tap to dismiss. Arm again for the next trip.
@@ -90,7 +91,9 @@ After the initial partition layout is installed, application-only updates write 
 4. Enter a **2.4 GHz** Wi-Fi network, search a route, choose direction/service and boarding stop, then save. Passwords are sent to the device, not written to a computer-side file or log.
 5. Once connected, the display works without the computer. Stop the bridge with Ctrl-C and close its browser tab.
 
-The display's **設定** button shows its local-network URL and a per-boot six-digit settings code. Use these to change settings from the same network. The web form is local HTTP, intended only for a trusted LAN; do not port-forward or expose it publicly. The code guards configuration writes. Wi-Fi credentials reside in device NVS, which is not encrypted by this beta.
+The display's **設定** button opens four sections: route/stop, reminder, brightness and Wi-Fi. Tap the route section for a0–9 keypad, switch toABC for letters (N269,215X), search, select the direction/service variant, then choose a stop. Use the explicit Back button; tapping blank space no longer exits. **Save settings** applies the draft. Back from the settings home discards it.
+
+The Wi-Fi section shows the local-network URL and a per-boot six-digit settings code. Use these to change network credentials from the same network. The web form is local HTTP, intended only for a trusted LAN; do not port-forward or expose it publicly. The code guards configuration writes. Wi-Fi credentials reside in device NVS, which is not encrypted by this beta.
 
 Leaving the Wi-Fi inputs empty preserves the saved connection. A newly selected route must be searched before saving. Saved values are not yet fully pre-populated in the web form; check your route, direction, stop and reminder settings each time.
 
@@ -111,6 +114,8 @@ c++ -std=c++17 tests/eta_logic_test.cpp -o /tmp/kmb-eta-tests
 /tmp/kmb-eta-tests
 c++ -std=c++17 tests/eta_animation_test.cpp -o /tmp/kmb-animation-tests
 /tmp/kmb-animation-tests
+c++ -std=c++17 tests/native_input_test.cpp -o /tmp/kmb-native-input
+/tmp/kmb-native-input
 python -m py_compile setup/server.py
 pio run
 ```
@@ -120,5 +125,7 @@ The12 ETA checks and16 animation checks cover timezone conversion, invalid/null 
 ## Contributing
 
 Report board model, route/direction/stop, expected vs observed behavior, and a screenshot if useful. **Do not attach Wi-Fi passwords, NVS dumps or full-flash backups.** The visual language and layout are locked as a baseline, not frozen forever: propose improvements separately and get maintainer approval before redesigning. See [UI baseline](design/UI_LOCK.md).
+
+The bare board has a battery connector, not a built-in battery pack. If powered only by USB, unplugging turns it off and stops monitoring; saved settings remain. External battery hardware has not been tested in this beta.
 
 Code is MIT-licensed. Data, fonts and third-party libraries have separate terms.

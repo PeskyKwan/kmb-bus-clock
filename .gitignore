@@ -29,3 +29,7 @@ docs/eta-sample.json
 # Maintainer-only planning and superseded asset generator.
 SETTINGS.md
 tools/build_font.py
+
+src/stop_catalog.h
+
+src/route_catalog.h
