@@ -7,9 +7,12 @@ def pack(c):return ((c[0]>>3)<<11)|((c[1]>>2)<<5)|(c[2]>>3)
 def blend(f,b,a):return (((((f>>11)&31)*a+((b>>11)&31)*(15-a)+7)//15)<<11)|(((((f>>5)&63)*a+((b>>5)&63)*(15-a)+7)//15)<<5)|(((f&31)*a+(b&31)*(15-a)+7)//15)
 source=''.join((r/'src'/x).read_text() for x in ['main.cpp','native_settings.inc'])
 reserved=set(int(s,16) for s in re.findall(r'\b0x[0-9A-Fa-f]{4}\b',source))
-for fg,bg in [(0x21e6,x) for x in [0xff9b,0xfffe,0xef7b,0xf6b8,0xef18,0xeddf]]+[(0xff9b,0xca07),(0xff9b,0x21e6),(0xca07,0xff9b),(0xfffe,0xca07)]:
- reserved.update(blend(fg,bg,a) for a in range(16))
-colors=sorted(reserved);assert len(colors)<256
+pairs=[]
+for ink,bg,mp,panel,feature,field in [(0x21e6,0xff7a,0xd71d,0xef18,0xf6b8,0xfffe),(0xff7a,0x10e3,0x224c,0x29e8,0x4289,0x1924)]:
+ pairs.extend([(ink,x) for x in (bg,mp,panel,feature,field)]+[(bg,ink),(bg,0xca07)])
+pairs.extend([(0xfffe,0xca07),(0x21e6,0xfffe)])
+for fg,bg in pairs:reserved.update(blend(fg,bg,a) for a in range(16))
+print("Reserved:",len(reserved));colors=sorted(reserved);assert len(colors)<256
 im=Image.open(r/'assets/design-base.png').convert('RGB');q=im.quantize(colors=256-len(colors));pal=q.getpalette()
 for i in range(0,3*(256-len(colors)),3):
  c=pack(pal[i:i+3])

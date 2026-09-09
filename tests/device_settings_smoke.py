@@ -31,14 +31,14 @@ try:
   if baseline.get('connected') and baseline.get('etaCode') in (1,2):break
   if time.monotonic()>end:raise TimeoutError('Wi-Fi/ETA ready')
   time.sleep(2)
- ui('open');tap(50,80);tap(50,215);tap(261,149);r=tap(160,89);assert r['input']=='92',r
+ ui('open');tap(50,80);tap(50,80);tap(50,215);tap(261,149);r=tap(160,89);assert r['input']=='92',r
  print('Keypad input92 PASS',flush=True)
  tap(200,215);r=wait_page(2);assert r['variants']>=2,r
  print('Live direction/service catalog PASS:',r['variants'],flush=True)
  tap(50,67);r=wait_page(3);assert r['stops']>=8,r
  print('Live stop list PASS:',r['stops'],flush=True)
  tap(270,215);r=tap(270,215);assert r['offset']==6,r
- tap(50,115);r=wait_page(0);assert r['draftRoute']=='92' and r['draftStop']=='5089C69E080B7A43',r
+ tap(50,115);r=wait_page(8);assert r['draftRoute']=='92' and r['draftStop']=='5089C69E080B7A43',r
  print('Paged stop selection + live metadata PASS',flush=True)
  ui('close');after=command({'cmd':'state'},'state')
  for key in ['route','bound','service','stop','threshold','brightness']:

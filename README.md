@@ -10,11 +10,11 @@ A small, friendly Hong Kong bus-arrival display for the **LCDWIKI E32R28T-1**: a
 - Native touch settings: numeric/letter route keypad → live destination/service variants → paged boarding stops. Settings stay as a draft until Save.
 - A local web form remains available for Wi-Fi credentials and alternative configuration.
 - First-use three-point touch calibration, saved across application updates.
-- Configurable lead time and screen brightness.
+- Configurable lead time and screen brightness. Warm cream day mode, dark green night mode, automatic sunrise/sunset switching, and a synchronized Hong Kong clock.
 - One-shot **visual** reminder: arm it, receive one alert, tap to dismiss. Arm again for the next trip.
 - Smooth Chinese/Latin fonts and the approved compact layout.
 - A small animated bus driven by the real ETA countdown, explicitly labelled as an estimate.
-- Automatic road sections extending up to3km upstream along the selected bus route, ending at the boarding stop. All matching upstream stops inside the section are drawn as dots, with up to3 key name labels. Bends and east/west/north/south orientation are preserved at uniform scale. A nearby route origin limits the available length. Missing/mismatched/oversized geometry falls back to a labelled schematic.
+- Automatic road sections extending up to3km upstream along the selected bus route, ending at the boarding stop. All matching upstream stops inside the section are drawn as dots, with up to3 key name labels. Bends and east/west/north/south orientation are preserved at uniform scale. A nearby route origin limits the available length. Missing/mismatched/oversized geometry shows an unavailable message and retries.
 - Buffered rendering sends only changed16×16 tiles; keypresses and ETA refreshes no longer clear the physical screen first.
 
 **Important beta limits:** audio is not implemented; the board has no attached speaker. No live bus GPS is supplied. General maps have been verified on2A, but broader route/variant coverage, very long routes and reminder schedules still need testing. Never use this as your only way to decide when to catch a bus.
@@ -92,7 +92,7 @@ After the initial partition layout is installed, application-only updates write 
 4. Enter a **2.4 GHz** Wi-Fi network, search a route, choose direction/service and boarding stop, then save. Passwords are sent to the device, not written to a computer-side file or log.
 5. Once connected, the display works without the computer. Stop the bridge with Ctrl-C and close its browser tab.
 
-The display's **設定** button opens four sections: route/stop, reminder, brightness and Wi-Fi. Tap the route section for a0–9 keypad, switch toABC for letters (N269,215X), search, select the direction/service variant, then choose a stop. Use the explicit Back button; tapping blank space no longer exits. **Save settings** applies the draft. Back from the settings home discards it.
+The display's **設定** button opens **巴士與提醒** (route/stop and alert) and **裝置設定** (display mode, brightness and Wi-Fi). Tap the route section for a0–9 keypad, switch toABC for only the next letters found in the route catalog (92 offers R; no full A–Z pages), search, select the direction/service variant, then choose a stop. Use the explicit Back button; tapping blank space no longer exits. **Save settings** applies the draft. Back from the settings home discards it. Appearance offers Auto / Day / Night with a live preview; Auto uses calculated local sunrise/sunset. See [appearance details](docs/APPEARANCE.md).
 
 The Wi-Fi section shows the local-network URL and a per-boot six-digit settings code. Use these to change network credentials from the same network. The web form is local HTTP, intended only for a trusted LAN; do not port-forward or expose it publicly. The code guards configuration writes. Wi-Fi credentials reside in device NVS, which is not encrypted by this beta.
 

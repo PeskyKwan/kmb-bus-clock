@@ -36,3 +36,9 @@ Sum approved the four-entry settings preview and a numeric/letter route keypad. 
 ## Approved route-distance window — 2026-09-09
 
 Sum approved replacing fixed three-stop framing with up to3km measured backwards along the incoming route from the boarding stop. Preserve true orientation; the boarding stop may lie on any side. Show along-route stop markers without a fixed station count; keep name labels selective for readability. Do not add preparation/walking-time calculations. This supersedes the earlier fixed92/three-stop map exception.
+
+## Approved appearance additions — 2026-09-09
+Sum requested a warmer cream background, restored Hong Kong clock, compact route-aware letter keys, and sunset-based automatic dark mode. Keep existing plate, ETA and geographic map composition. Clock fits below ETA units; Appearance and brightness settings provide Auto/Day/Night with draft preview and explicit Save.
+
+## Approved layout refinement — 2026-09-09
+Sum requested two top-level settings categories (Bus/reminders and Device), explicit Auto/Fixed day/Fixed night modes, a muted blue night map matching a pale blue day map, clock removed from the ETA area, station text matching the top plate heading, and a5–10% larger plate. Implemented120px plate from112px (+7.1%),12px station text with safe-width ellipsis, clock above destination in right header. ETA and minutes stand alone. Supersedes below-ETA clock placement.
