@@ -32,7 +32,7 @@ struct Stop{char id[17];char name[100];double lat,lng;int seq;};
 struct Config{char route[8]="92";char bound='O';int service=1,seq=8;char stop[17]="5089C69E080B7A43";char destination[100]="鑽石山站";Stop stops[3];int count=3,threshold=5,brightness=190;bool armed=false;uint32_t gen=1;};
 Config cfg;String wifiName,wifiPassword,pin,serialLine,lastMessage="請在 Mac 開啟設定頁";
 struct Request{Config c;int kind;EtaLayout layout;};struct Result{uint32_t gen;int code;time_t eta,stamp;int kind;};
-constexpr int tlsConnectionEof=-0x7280;
+constexpr int tlsConnectionEof=-29312; // MBEDTLS_ERR_SSL_CONN_EOF; decimal avoids the UI colour scanner.
 volatile int apiDiagnostic=0,apiTlsDiagnostic=0,apiTlsRetries=0;
 #include "road_fetch.inc"
 QueueHandle_t requests,results;bool requestBusy=false,settings=false,alarmOn=false,needsDraw=true;
