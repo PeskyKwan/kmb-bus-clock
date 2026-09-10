@@ -48,3 +48,6 @@ Mode taps immediately persist; use自動/日間/深色, integer brightness and c
 
 ## User-approved map detail —2026-09-10
 Use夜間 instead of深色. Gear must be recognizable (stock allowed if needed); current filled toothed ring replaces the sun-like outline. Subtle decorative grid and a red travel-direction arrow authorized; preserve174×140 map bounds. Arrow follows route order, not fixed north/south or GPS.
+
+## Approved animation-only improvement —2026-09-10
+Sum authorized more data-supported bus movement using upstream ETA. No new on-screen text, settings or layout changes. Keep the official target-stop ETA/alerts unchanged; hide/fade uncertain position estimates instead of a fixed countdown position.

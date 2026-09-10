@@ -23,7 +23,7 @@ No AI assistant, GitHub account or programming tools needed. The browser asks yo
 - Configurable lead time and screen brightness. Warm cream day mode, dark green night mode, automatic sunrise/sunset switching, and a synchronized Hong Kong clock.
 - One-shot **visual** reminder: arm it, receive one alert, tap to dismiss. Arm again for the next trip.
 - Smooth Chinese/Latin fonts and the approved compact layout.
-- A small animated bus driven by the real ETA countdown, explicitly labelled as an estimate.
+- A small animated bus positioned from matched multi-stop ETA forecasts and actual road distances, explicitly labelled as an estimate.
 - Automatic road sections extending up to3km upstream along the selected bus route, ending at the boarding stop. All matching upstream stops inside the section are drawn as dots, with up to3 key name labels. Bends and east/west/north/south orientation are preserved at uniform scale. A nearby route origin limits the available length. Missing/mismatched/oversized geometry shows an unavailable message and retries.
 - Buffered rendering sends only changed16×16 tiles; keypresses and ETA refreshes no longer clear the physical screen first.
 
@@ -105,7 +105,8 @@ Gear → 巴士 → 路線 opens the route keypad; choose direction/service and 
 - A number is an estimated arrival time, not a guarantee.
 - `--` means no usable ETA (offline, waiting, no forecast, failed request or stale data).
 - The device normally polls every 30 seconds, backing off on failures. Data older than 120 seconds cannot trigger an alert.
-- The bus marker is an **illustrative ETA countdown**, not GPS or a claim that a bus passed a particular stop. The final10minutes map to the displayed path:4minutes is approximately60% along. Longer waits stay at the start. It moves gently, follows ETA revisions, and disappears on stale/null/offline data.
+- The bus marker is a **multi-stop ETA position estimate**, not GPS. It matches compatible upstream forecasts across two distinct provider updates, then interpolates between stop predictions along the road. Schedule-only, ambiguous, stale or off-map positions are not shown; short data gaps use only still-fresh history. Large revisions reacquire rather than driving backwards. The official boarding-stop ETA and alerts remain independent. There is no fixed ten-minute journey animation.
+- Position polling adds one bounded, streamed route-wide request about every30seconds while ETA/map are available. Actual positioning accuracy still needs journey validation.
 - Notifications are one-shot. `提醒已開` means armed; an alert automatically disarms to avoid repeated alerts from ETA revisions.
 
 See [map design and remaining work](docs/MAP_DESIGN.md), [beta status](docs/BETA_STATUS.md), and [third-party attribution](THIRD_PARTY.md).
@@ -117,6 +118,10 @@ c++ -std=c++17 tests/eta_logic_test.cpp -o /tmp/kmb-eta-tests
 /tmp/kmb-eta-tests
 c++ -std=c++17 tests/eta_animation_test.cpp -o /tmp/kmb-animation-tests
 /tmp/kmb-animation-tests
+c++ -std=c++17 tests/eta_position_test.cpp -o /tmp/kmb-position-tests
+/tmp/kmb-position-tests
+c++ -std=c++17 -I.pio/libdeps/board/ArduinoJson/src tests/position_decode_test.cpp -o /tmp/kmb-decode-tests
+/tmp/kmb-decode-tests
 c++ -std=c++17 tests/native_input_test.cpp -o /tmp/kmb-native-input
 /tmp/kmb-native-input
 c++ -std=c++17 tests/map_render_test.cpp -o /tmp/kmb-map-tests

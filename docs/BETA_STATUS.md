@@ -1,3 +1,11 @@
+# Multi-stop animation update —0.2.1
+
+The marker now uses up to12 road-distance ETA anchors and up to3 forecasts per anchor. It requires two distinct provider updates and a unique compatible chain near the target. Schedule-only/ambiguous/stale cases fade out; the large ETA and one-shot alert logic are unchanged. Fixed600s progress removed. Host tests cover ranking changes, ambiguity, schedules, history, freshness and malformed streaming input. Physical ground-truth location accuracy is not certified.
+
+Physical update check (2026-09-10): app-only flash/hash verified; saved92 configuration reconnects, target ETA and road load, route-wide stream decodes24 selected forecast rows. Matching was not ready during this observation, so the marker stayed hidden; actual road-position accuracy still needs trip testing. Fixed a TLS allocation failure by removing the eager16KB road-vector reservation before the handshake.
+
+Historical checks follow:
+
 # Public beta status — 2026-09-09
 
 ## Verified on one E32R28T-1

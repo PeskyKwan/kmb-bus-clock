@@ -12,6 +12,7 @@
 #include "kmb_ca.h"
 #include "eta_logic.h"
 #include "eta_animation.h"
+#include "eta_position.h"
 #include "setup_page.h"
 #include "buffered_display.h"
 SPIClass lcdSPI(HSPI),touchSPI(VSPI);
@@ -30,16 +31,16 @@ int clockMinute=-1;
 struct Stop{char id[17];char name[100];double lat,lng;int seq;};
 struct Config{char route[8]="92";char bound='O';int service=1,seq=8;char stop[17]="5089C69E080B7A43";char destination[100]="鑽石山站";Stop stops[3];int count=3,threshold=5,brightness=190;bool armed=false;uint32_t gen=1;};
 Config cfg;String wifiName,wifiPassword,pin,serialLine,lastMessage="請在 Mac 開啟設定頁";
-struct Request{Config c;int kind;};struct Result{uint32_t gen;int code;time_t eta,stamp;int kind;};
+struct Request{Config c;int kind;EtaLayout layout;};struct Result{uint32_t gen;int code;time_t eta,stamp;int kind;};
 #include "road_fetch.inc"
 QueueHandle_t requests,results;bool requestBusy=false,settings=false,alarmOn=false,needsDraw=true;
 volatile int apiDiagnostic=0;
 int etaCode=0;time_t etaEpoch=0,dataStamp=0;unsigned long lastPoll=0,lastRender=0,lastStatus=0,lastTouch=0;int failures=0;
 float calibration[6];bool calibrated=false;int calStep=0;float rawCal[3][2];bool held=false;
 int touchX=0,touchY=0;
-ApproachMotion motion;
+ApproachMotion motion;EtaPositionTracker positionTracker;unsigned long lastPositionPoll=0;int positionCode=0,positionRows=0;
 bool mapActualRoad=false,markerPainted=false;
-int mapX[3],mapY[3],markerX=0,markerY=0;
+int mapX[3],mapY[3],markerX=0,markerY=0,markerAlpha=0;
 unsigned long lastAnimation=0;
 void drawMap();
 void mapGrid();
@@ -68,7 +69,7 @@ String stationName(){String s=cfg.stops[cfg.count-1].name;int pos=s.indexOf('(')
 void drawPlate(){plate.fillScreen(BG);plate.fillCircle(56,56,51,RED);painter=&plate;textBG=RED;centered(7,16,98,"巴士站",12,PAPER);plate.fillRect(16,33,80,43,0xFFFE);textBG=0xFFFE;bigNumber(cfg.route,16,33,80,43,PLATE_INK);textBG=RED;String name=stationName();String shown;const char*rest=name.c_str();while(*rest){const char*start=rest;nextCode(rest);String ch;while(start<rest)ch+=*start++;if(textWidth((shown+ch+(*rest?"…":"")).c_str(),12)>72){shown+="…";break;}shown+=ch;}centered(20,80,72,shown.c_str(),12,PAPER);painter=&lcd;textBG=BG;
  const float co=.9986295348f,si=.0523359562f;uint16_t line[120];
  for(int y=0;y<120;y++){for(int x=0;x<120;x++){float u=(x-59.5f)*112/120.f,v=(y-59.5f)*112/120.f;float sx=co*u-si*v+55.5f,sy=si*u+co*v+55.5f;int ix=floorf(sx),iy=floorf(sy);if(ix<0||ix>=111||iy<0||iy>=111){line[x]=BG;continue;}int ax=roundf((sx-ix)*15),ay=roundf((sy-iy)*15);line[x]=blend565(blend565(plate.pixelColor(ix+1,iy+1),plate.pixelColor(ix,iy+1),ax),blend565(plate.pixelColor(ix+1,iy),plate.pixelColor(ix,iy),ax),ay);}lcd.drawRGBBitmap(6,y+1,line,120,1);}}
-void emitState(){DynamicJsonDocument d(1024);d["event"]="state";d["app"]="kmb-bus-clock";d["version"]="0.2.0";d["nightMode"]=nightMode;d["themeMode"]=themeMode;d["clockSynced"]=time(nullptr)>1700000000;d["connected"]=WiFi.status()==WL_CONNECTED;d["ip"]=WiFi.localIP().toString();d["ssid"]=wifiName;d["message"]=lastMessage;d["route"]=cfg.route;d["bound"]=String(cfg.bound);d["service"]=cfg.service;d["stop"]=cfg.stop;d["threshold"]=cfg.threshold;d["brightness"]=cfg.brightness;d["armed"]=cfg.armed;d["etaCode"]=etaCode;d["animationVisible"]=motion.visible;d["animationFraction"]=motion.fraction;d["sentTiles"]=lcd.sentTiles;d["presents"]=lcd.presents;d["roadReady"]=activeRoad.valid;d["roadPoints"]=activeRoad.count;d["mapStops"]=activeRoad.stopCount;d["mapMeters"]=activeRoad.meters;d["roadDiagnostic"]=roadDiagnostic;d["heap"]=ESP.getFreeHeap();d["displayReady"]=lcd.ready();d["apiDiagnostic"]=apiDiagnostic;d["largestHeap"]=ESP.getMaxAllocHeap();serializeJson(d,Serial);Serial.println();}
+void emitState(){DynamicJsonDocument d(1536);d["event"]="state";d["app"]="kmb-bus-clock";d["version"]="0.2.1";d["nightMode"]=nightMode;d["themeMode"]=themeMode;d["clockSynced"]=time(nullptr)>1700000000;d["connected"]=WiFi.status()==WL_CONNECTED;d["ip"]=WiFi.localIP().toString();d["ssid"]=wifiName;d["message"]=lastMessage;d["route"]=cfg.route;d["bound"]=String(cfg.bound);d["service"]=cfg.service;d["stop"]=cfg.stop;d["threshold"]=cfg.threshold;d["brightness"]=cfg.brightness;d["armed"]=cfg.armed;d["etaCode"]=etaCode;d["positionCode"]=positionCode;d["positionRows"]=positionRows;d["positionSamples"]=positionTracker.samples();float positionEstimate=0;d["positionReady"]=positionTracker.estimate(time(nullptr),etaEpoch,positionEstimate);d["animationVisible"]=motion.visible;d["animationFraction"]=motion.fraction;d["sentTiles"]=lcd.sentTiles;d["presents"]=lcd.presents;d["roadReady"]=activeRoad.valid;d["roadPoints"]=activeRoad.count;d["mapStops"]=activeRoad.stopCount;d["mapMeters"]=activeRoad.meters;d["roadDiagnostic"]=roadDiagnostic;d["heap"]=ESP.getFreeHeap();d["displayReady"]=lcd.ready();d["apiDiagnostic"]=apiDiagnostic;d["largestHeap"]=ESP.getMaxAllocHeap();serializeJson(d,Serial);Serial.println();}
 void saveArmed(){prefs.putBool("armed",cfg.armed);}
 void defaultStops(){strlcpy(cfg.stops[0].id,"1741D103CB826E93",17);strlcpy(cfg.stops[0].name,"大涌口",100);cfg.stops[0].lat=22.372007;cfg.stops[0].lng=114.260106;cfg.stops[0].seq=6;strlcpy(cfg.stops[1].id,"4823D6EFB3722E64",17);strlcpy(cfg.stops[1].name,"白沙臺",100);cfg.stops[1].lat=22.367542;cfg.stops[1].lng=114.260133;cfg.stops[1].seq=7;strlcpy(cfg.stops[2].id,cfg.stop,17);strlcpy(cfg.stops[2].name,"白沙灣",100);cfg.stops[2].lat=22.364778;cfg.stops[2].lng=114.259413;cfg.stops[2].seq=8;}
 bool validID(const char*s){if(strlen(s)!=16)return false;for(int i=0;i<16;i++)if(!isxdigit(s[i]))return false;return true;}
@@ -83,13 +84,14 @@ bool applyConfig(JsonDocument&d,bool persist){
  if(strcmp(next.stops[next.count-1].id,stop))return false;
  String newSSID=d["ssid"]|"",newPass=d["password"]|"";if(newSSID.length()>32||newPass.length()>63)return false;
  if(newSSID.length()&&newSSID!=wifiName&&newPass.length()==0&&wifiName.length())return false;
- bool sameMap=!strcmp(cfg.route,next.route)&&cfg.bound==next.bound&&cfg.service==next.service&&!strcmp(cfg.stop,next.stop);cfg=next;cfg.gen++;if(sameMap&&activeRoad.valid){activeRoad.gen=cfg.gen;roadTriedGen=cfg.gen;}else{activeRoad.valid=false;roadTriedGen=0;}motion.reset();markerPainted=false;alarmOn=false;etaEpoch=0;etaCode=0;dataStamp=0;needsDraw=true;lastPoll=0;failures=0;
+ bool sameMap=!strcmp(cfg.route,next.route)&&cfg.bound==next.bound&&cfg.service==next.service&&!strcmp(cfg.stop,next.stop);cfg=next;cfg.gen++;if(sameMap&&activeRoad.valid){activeRoad.gen=cfg.gen;roadTriedGen=cfg.gen;}else{activeRoad.valid=false;roadTriedGen=0;}motion.reset();positionTracker.reset();lastPositionPoll=0;markerPainted=false;alarmOn=false;etaEpoch=0;etaCode=0;dataStamp=0;needsDraw=true;lastPoll=0;failures=0;
  if(persist){d.remove("ssid");d.remove("password");d.remove("key");String safe;serializeJson(d,safe);prefs.putString("config",safe);saveArmed();}
  if(newSSID.length()&&(newSSID!=wifiName||newPass.length())){wifiName=newSSID;if(newPass.length())wifiPassword=newPass;if(persist){prefs.putString("ssid",wifiName);prefs.putString("pass",wifiPassword);}WiFi.begin(wifiName.c_str(),wifiPassword.c_str());}
  ledcWrite(0,cfg.brightness);lastMessage="設定已儲存；正在連線及核對路線";emitState();return true;
 }
 bool api(const String&path,DynamicJsonDocument&out){WiFiClientSecure tls;tls.setCACert(kmbCA);tls.setHandshakeTimeout(12);tls.setTimeout(7);HTTPClient h;h.setConnectTimeout(6000);h.setTimeout(7000);h.useHTTP10(true);if(!h.begin(tls,"https://data.etabus.gov.hk/v1/transport/kmb/"+path))return false;int code=h.GET();bool ok=false;if(code==200&&h.getSize()<65536){DeserializationError err;if(path.startsWith("route-stop/")){StaticJsonDocument<160> filter;filter["data"][0]["stop"]=true;filter["data"][0]["seq"]=true;err=deserializeJson(out,h.getStream(),DeserializationOption::Filter(filter));}else err=deserializeJson(out,h.getStream());apiDiagnostic=(int)err.code();ok=!err;}else apiDiagnostic=code;h.end();return ok;}
-void worker(void*){Request req;uint32_t validated=0;for(;;){if(xQueueReceive(requests,&req,portMAX_DELAY)!=pdTRUE)continue;Result result={req.c.gen,-1,0,0};if(req.kind==1){result.kind=1;result.code=prepareRoad(req.c)?1:0;xQueueSend(results,&result,portMAX_DELAY);continue;}DynamicJsonDocument d(8192);
+#include "position_fetch.inc"
+void worker(void*){Request req;uint32_t validated=0;for(;;){if(xQueueReceive(requests,&req,portMAX_DELAY)!=pdTRUE)continue;Result result={req.c.gen,-1,0,0};if(req.kind==1){result.kind=1;result.code=prepareRoad(req.c)?1:0;xQueueSend(results,&result,portMAX_DELAY);continue;}if(req.kind==2){result.kind=2;result.code=fetchPosition(req)?1:0;xQueueSend(results,&result,portMAX_DELAY);continue;}DynamicJsonDocument d(8192);
  if(validated!=req.c.gen){String dir=req.c.bound=='O'?"outbound":"inbound";bool found=false;if(api("route-stop/"+String(req.c.route)+"/"+dir+"/"+String(req.c.service),d)){for(JsonObject row:d["data"].as<JsonArray>())if(String(row["stop"]|"")==req.c.stop&&atoi(row["seq"]|"0")==req.c.seq)found=true;}if(!found){result.code=-2;xQueueSend(results,&result,portMAX_DELAY);continue;}cacheRoadStops(req.c,d["data"].as<JsonArray>());validated=req.c.gen;d.clear();}
  if(api("eta/"+String(req.c.stop)+"/"+req.c.route+"/"+String(req.c.service),d)){time_t now=time(nullptr),generated=parseISO(d["generated_timestamp"]|"");result.code=1;
  if(!generated||abs((long)(now-generated))>120)result.code=-3;
@@ -113,18 +115,16 @@ void drawMap(){markerPainted=false;mapActualRoad=false;if(activeRoad.valid&&acti
 void restoreMarker(){if(markerPainted)drawMap();markerPainted=false;}
 void updateAnimation(){
  const unsigned long tick=millis();const float seconds=lastAnimation?(tick-lastAnimation)/1000.0f:.1f;lastAnimation=tick;
- time_t now=time(nullptr);motion.update(activeRoad.valid&&activeRoad.gen==cfg.gen&&animationFresh(WiFi.status()==WL_CONNECTED,etaCode,now,dataStamp,etaEpoch),now,etaEpoch,seconds);
+ time_t now=time(nullptr);if(!activeRoad.valid||activeRoad.count<2){motion.reset();restoreMarker();return;}float estimated=0;bool valid=activeRoad.gen==cfg.gen&&animationFresh(WiFi.status()==WL_CONNECTED,etaCode,now,dataStamp,etaEpoch)&&positionTracker.estimate(now,etaEpoch,estimated);motion.update(valid,estimated,seconds);
  if(!motion.visible){restoreMarker();return;}
  bool downloaded=activeRoad.valid&&activeRoad.gen==cfg.gen;
  const int count=activeRoad.count;
  auto point=[&](int i,int axis)->float{return axis?activeRoad.points[i].y:activeRoad.points[i].x;};
- float total=0;for(int i=1;i<count;i++)total+=hypotf(point(i,0)-point(i-1,0),point(i,1)-point(i-1,1));
- float distance=motion.fraction*total,x=point(0,0),y=point(0,1);
- for(int i=1;i<count;i++){float dx=point(i,0)-point(i-1,0),dy=point(i,1)-point(i-1,1),len=hypotf(dx,dy);if(len<=.001f)continue;if(distance<=len||i==count-1){float t=constrain(distance/len,0.0f,1.0f);x=point(i-1,0)+dx*t;y=point(i-1,1)+dy*t;break;}distance-=len;}
+ float x=point(0,0),y=point(0,1);for(int i=1;i<count;i++){float a=activeRoad.pointFractions[i-1],b=activeRoad.pointFractions[i];if(motion.fraction<=b||i==count-1){float t=b>a?constrain((motion.fraction-a)/(b-a),0.f,1.f):0;x=point(i-1,0)+(point(i,0)-point(i-1,0))*t;y=point(i-1,1)+(point(i,1)-point(i-1,1))*t;break;}}
  const int bob=motion.fraction<.995f?((tick/650)%2):0;
  int nextX=constrain((int)roundf(x),145,296),nextY=constrain((int)roundf(y)+bob,48,161);
- if(markerPainted&&markerX==nextX&&markerY==nextY)return;
- restoreMarker();markerX=nextX;markerY=nextY;
+ int alpha=roundf(motion.opacity*15);if(markerPainted&&markerX==nextX&&markerY==nextY&&markerAlpha==alpha)return;
+ restoreMarker();markerX=nextX;markerY=nextY;markerAlpha=alpha;
  GFXcanvas16 sprite(22,26);if(!sprite.getBuffer())return;
  for(int y=0;y<26;y++)for(int x=0;x<22;x++)sprite.drawPixel(x,y,lcd.pixelColor(markerX-11+x,markerY-13+y));
  sprite.fillRoundRect(2,0,18,24,6,0xFFDD);sprite.fillRoundRect(3,1,16,22,5,0xD328);
@@ -132,6 +132,7 @@ void updateAnimation(){
  sprite.fillCircle(6,19,1,0xFFDD);sprite.fillCircle(15,19,1,0xFFDD);
  sprite.drawLine(9,19,10,20,INK);sprite.drawLine(10,20,12,19,INK);
  sprite.fillRect(5,23,3,2,INK);sprite.fillRect(14,23,3,2,INK);
+ if(alpha<15)for(int y=0;y<26;y++)for(int x=0;x<22;x++){auto&p=sprite.getBuffer()[y*22+x];p=blend565(p,lcd.pixelColor(markerX-11+x,markerY-13+y),alpha);}
  lcd.drawRGBBitmap(markerX-11,markerY-13,sprite.getBuffer(),22,26);markerPainted=true;
 }
 #include "wifi_setup.inc"
@@ -146,9 +147,10 @@ void setup(){hardwareInit();lcd.begin();prefs.begin("busclock",false);themeMode=
  updateTheme();if(!calibrated)calibrationView();else drawMain();Serial.println("KMB_CLOCK_LIVE_READY");emitState();}
 void loop(){web.handleClient();pollNative();pollWifiSetup();while(Serial.available()){char ch=Serial.read();if(ch=='\n'){DynamicJsonDocument d(4096);if(!deserializeJson(d,serialLine)){if(String(d["cmd"]|"")=="state")emitState();else if(String(d["cmd"]|"")=="wifi")wifiCommand(d);else if(String(d["cmd"]|"")=="settings")nativeDebug(d);else if(!applyConfig(d,true)){lastMessage="設定無效，未儲存";emitState();}}serialLine="";}else if(serialLine.length()<4000)serialLine+=ch;else serialLine="";}
  bool pressed=digitalRead(36)==LOW;if(pressed&&!held&&millis()-lastTouch>250){touchSPI.beginTransaction(SPISettings(1000000,MSBFIRST,SPI_MODE0));digitalWrite(33,LOW);touchSPI.transfer(0xD0);int rx=touchSPI.transfer16(0)>>3;touchSPI.transfer(0x90);int ry=touchSPI.transfer16(0)>>3;digitalWrite(33,HIGH);touchSPI.endTransaction();lastTouch=millis();if(rx>100&&rx<4000&&ry>100&&ry<4000)onTouch(rx,ry);}held=pressed;
- Result result;if(xQueueReceive(results,&result,0)==pdTRUE){requestBusy=false;if(result.kind==1){if(result.gen==cfg.gen){roadTriedGen=cfg.gen;roadAttemptAt=millis();activeRoad=pendingRoad;needsDraw=true;}}else if(result.gen==cfg.gen){etaCode=result.code;etaEpoch=result.eta;dataStamp=result.stamp;failures=etaCode<0?min(failures+1,4):0;lastMessage=etaCode==2?"已連線，正在顯示真實九巴 ETA":etaCode==1?"已連線，九巴暫時沒有到站預報":etaCode==-2?"路線或車站未能核實，正在重試":"到站資料未能更新，正在重試";needsDraw=true;emitState();}}
+ Result result;if(xQueueReceive(results,&result,0)==pdTRUE){requestBusy=false;if(result.kind==1){if(result.gen==cfg.gen){roadTriedGen=cfg.gen;roadAttemptAt=millis();activeRoad=pendingRoad;needsDraw=true;}}else if(result.kind==2){if(result.gen==cfg.gen){positionCode=result.code;positionRows=0;if(result.code)for(int i=0;i<pendingFrame.layout.count;i++)positionRows+=pendingFrame.counts[i];if(result.code)positionTracker.accept(pendingFrame,time(nullptr),etaEpoch);}}else if(result.gen==cfg.gen){etaCode=result.code;etaEpoch=result.eta;dataStamp=result.stamp;failures=etaCode<0?min(failures+1,4):0;lastMessage=etaCode==2?"已連線，正在顯示真實九巴 ETA":etaCode==1?"已連線，九巴暫時沒有到站預報":etaCode==-2?"路線或車站未能核實，正在重試":"到站資料未能更新，正在重試";needsDraw=true;emitState();}}
  time_t now=time(nullptr);if(WiFi.status()==WL_CONNECTED&&now>1700000000&&!requestBusy&&!nativeBusy&&!nativePending&&!wifiWorkActive()&&(lastPoll==0||millis()-lastPoll>30000UL*(1<<failures))){Request r={cfg};if(xQueueSend(requests,&r,0)==pdTRUE){requestBusy=true;lastPoll=millis();}}
  if(WiFi.status()==WL_CONNECTED&&now>1700000000&&!requestBusy&&!nativeBusy&&!nativePending&&!wifiWorkActive()&&(roadTriedGen!=cfg.gen||(!activeRoad.valid&&millis()-roadAttemptAt>30000))&&(etaCode==1||etaCode==2)){Request mapRequest={cfg,1};if(xQueueSend(requests,&mapRequest,0)==pdTRUE)requestBusy=true;}
+ if(WiFi.status()==WL_CONNECTED&&etaCode==2&&activeRoad.valid&&activeRoad.gen==cfg.gen&&!requestBusy&&!nativeBusy&&!nativePending&&!wifiWorkActive()&&(lastPositionPoll==0||millis()-lastPositionPoll>30000)){Request r={cfg,2};r.layout=positionLayout(activeRoad);if(r.layout.count>=2&&xQueueSend(requests,&r,0)==pdTRUE){requestBusy=true;lastPositionPoll=millis();}}
  if(arrivalAlert(cfg.armed,WiFi.status()==WL_CONNECTED,etaCode,now,dataStamp,etaEpoch,cfg.threshold)){alarmOn=true;cfg.armed=false;saveArmed();needsDraw=true;}
  if((int)(now/60)!=clockMinute){clockMinute=now/60;if(!settings)updateTheme();needsDraw=true;}
  if(calibrated&&(needsDraw||millis()-lastRender>15000)){if(settings)drawSettings();else drawMain();needsDraw=false;lastRender=millis();}

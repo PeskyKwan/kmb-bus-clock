@@ -18,6 +18,6 @@ with tempfile.TemporaryDirectory(prefix='kmb-clock-pages-') as tmp:
  for key,value in [('user.name','PeskyKwan'),('user.email','PeskyKwan@users.noreply.github.com')]:subprocess.run(['git','config',key,value],cwd=path,check=True)
  subprocess.run(['git','add','.'],cwd=path,check=True)
  if subprocess.run(['git','diff','--cached','--quiet'],cwd=path).returncode:
-  subprocess.run(['git','commit','-m','Publish KMB Bus Clock installer 0.2.0'],cwd=path,check=True)
+  subprocess.run(['git','commit','-m','Publish KMB Bus Clock installer 0.2.1'],cwd=path,check=True)
   subprocess.run(['git','-c','credential.helper=','-c','credential.helper=!gh auth git-credential','push',remote,'HEAD:gh-pages'],cwd=path,check=True)
 print('Static installer pushed; enable/verify GitHub Pages separately.')
