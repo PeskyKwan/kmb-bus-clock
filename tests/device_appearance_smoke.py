@@ -2,7 +2,7 @@
 import argparse,json,time
 from pathlib import Path
 import serial
-p=argparse.ArgumentParser();p.add_argument('--port',required=True);args=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--port',required=True);p.add_argument('--wait-road',action='store_true');args=p.parse_args()
 s=serial.Serial(port=None,baudrate=115200,timeout=.5);s.port=args.port;s.dtr=False;s.rts=False;s.open();time.sleep(10);s.reset_input_buffer()
 def command(o,event='settings'):
  s.reset_input_buffer()
@@ -36,6 +36,12 @@ def capture(name):
  print(name+' framebuffer captured',flush=True)
 try:
  base=command({'cmd':'state'},'state')
+ if args.wait_road:
+  end=time.monotonic()+180
+  while not (base.get('connected') and base.get('etaCode')==2 and base.get('roadReady')):
+   if time.monotonic()>end:raise RuntimeError({k:base.get(k) for k in ('connected','etaCode','roadReady','roadDiagnostic')})
+   time.sleep(2);base=command({'cmd':'state'},'state')
+  assert base.get('mapContinuationMeters',0)>0,base.get('mapContinuationMeters')
  assert base['displayReady']
  print('Display ready; live connectivity:',base['connected'],'clock synchronized:',base['clockSynced'],flush=True)
  ui('open');tap(50,80);tap(50,80);tap(50,215);tap(261,149);r=tap(160,89);assert r['input']=='92' and r['letters']=='R',r

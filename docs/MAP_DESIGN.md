@@ -4,6 +4,8 @@
 
 From the selected boarding stop, follow the incoming route backwards for **up to3km of road distance**. This is not a3km straight-line radius and is not a fixed number of stations. If the route begins closer than3km, show the available section from its origin; do not invent a preceding road.
 
+Continue the road briefly beyond the selected boarding stop in a faded style so the stop's position on the route remains clear. The context extension is about15% of the available approach, bounded to150–450m (300m when there is no upstream road), and stops early at the route endpoint. It does not change the3km approach distance, animation path, ETA or reminders.
+
 Keep north at the top and preserve real east/west/north/south orientation, diagonals and bends. North-up does **not** mean the bus moves north. The selected stop can naturally sit on any side of the panel. Use one scale for both axes and include all intervening bends in the bounds.
 
 All matched upstream stops within the section are dots (64-marker safety capacity). Up to3 key names are labelled to keep the small display legible. No preparation-time, walking-time or departure-planning calculation is part of this feature. Existing reminder settings remain separate.
