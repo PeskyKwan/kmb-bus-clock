@@ -105,7 +105,7 @@ Gear → 巴士 → 路線 opens the route keypad; choose direction/service and 
 - A number is an estimated arrival time, not a guarantee.
 - `--` means no usable ETA (offline, waiting, no forecast, failed request or stale data).
 - The device normally polls every 30 seconds, backing off on failures. Data older than 120 seconds cannot trigger an alert.
-- The bus marker is a **multi-stop ETA position estimate**, not GPS. It matches compatible upstream forecasts across two distinct provider updates, then interpolates between stop predictions along the road. Schedule-only, ambiguous, stale or off-map positions are not shown; short data gaps use only still-fresh history. Large revisions reacquire rather than driving backwards. The official boarding-stop ETA and alerts remain independent. There is no fixed ten-minute journey animation.
+- Up to two bus markers are **multi-stop ETA position estimates**, not GPS. They match the next two ordered, independently supported upstream forecast chains across two distinct provider updates, then interpolate between stop predictions along the road. Schedule-only, ambiguous, stale or off-map positions are not shown; one reliable chain shows one bus rather than inventing a second. Short data gaps use only still-fresh history. Large revisions reacquire rather than driving backwards. The official first boarding-stop ETA and alerts remain independent. There is no fixed ten-minute journey animation.
 - Position polling adds one bounded, streamed route-wide request about every30seconds while ETA/map are available. Actual positioning accuracy still needs journey validation.
 - Notifications are one-shot. `提醒已開` means armed; an alert automatically disarms to avoid repeated alerts from ETA revisions.
 

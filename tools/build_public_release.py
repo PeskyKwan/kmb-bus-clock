@@ -17,6 +17,6 @@ for name,src,offset in inputs:
  dst=out/name;shutil.copyfile(src,dst);data=dst.read_bytes();parts.append(dict(path='firmware/'+name,offset=offset,size=len(data),sha256=hashlib.sha256(data).hexdigest()))
 assert parts[1]['offset']+parts[1]['size']<=0x9000
 assert parts[-1]['size']<0x300000
-manifest=dict(name='KMB Bus Clock',version='0.2.3',chip='ESP32',board='E32R28T-1',parts=parts)
+manifest=dict(name='KMB Bus Clock',version='0.2.4',chip='ESP32',board='E32R28T-1',parts=parts)
 (r/'installer/manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
 print('Public firmware prepared with OFL fonts. No device data read.')

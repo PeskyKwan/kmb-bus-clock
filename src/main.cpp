@@ -39,10 +39,11 @@ QueueHandle_t requests,results;bool requestBusy=false,settings=false,alarmOn=fal
 int etaCode=0;time_t etaEpoch=0,dataStamp=0;unsigned long lastPoll=0,lastRender=0,lastStatus=0,lastTouch=0;int failures=0;
 float calibration[6];bool calibrated=false;int calStep=0;float rawCal[3][2];bool held=false;
 int touchX=0,touchY=0;
-ApproachMotion motion;EtaPositionTracker positionTracker;unsigned long lastPositionPoll=0;int positionCode=0,positionRows=0;
+ApproachMotion motion[trackedBuses];EtaPositionTracker positionTracker;unsigned long lastPositionPoll=0;int positionCode=0,positionRows=0;
 bool mapActualRoad=false,markerPainted=false;
-int mapX[3],mapY[3],markerX=0,markerY=0,markerAlpha=0;
+int mapX[3],mapY[3],markerCount=0,markerX[trackedBuses]={},markerY[trackedBuses]={},markerAlpha[trackedBuses]={};
 unsigned long lastAnimation=0;
+void resetMotions(){for(auto&m:motion)m.reset();markerCount=0;markerPainted=false;}
 void drawMap();
 void mapGrid();
 void drawDownloadedMap();
@@ -51,7 +52,7 @@ void updateTheme(int mode=-1){
  int selected=mode<0?themeMode:mode;time_t now=time(nullptr);time_t hk=now+8*3600;tm local={};gmtime_r(&hk,&local);
  bool dark=selected==2;
  if(selected==0&&now>1700000000){auto stop=cfg.stops[cfg.count-1];auto sun=solarMinutes(local.tm_yday+1,stop.lat,stop.lng);int minute=local.tm_hour*60+local.tm_min;dark=minute<sun.rise||minute>=sun.set;}
- if(dark!=nightMode){nightMode=dark;needsDraw=true;markerPainted=false;}
+ if(dark!=nightMode){nightMode=dark;needsDraw=true;markerPainted=false;markerCount=0;}
  BG=dark?0x10E3:0xFF7A;INK=dark?0xFF7A:0x21E6;MAP=dark?0x224C:0xD71D;PANEL=dark?0x29E8:0xEF18;FEATURE=dark?0x4289:0xF6B8;FIELD=dark?0x1924:0xFFFE;ROAD=dark?0x7C0E:0xFFDD;EDGE=dark?0x4269:0xCE35;
 }
 uint16_t color(uint8_t r,uint8_t g,uint8_t b){return ((r>>3)<<11)|((g>>2)<<5)|(b>>3);}
@@ -70,7 +71,7 @@ String stationName(){String s=cfg.stops[cfg.count-1].name;int pos=s.indexOf('(')
 void drawPlate(){plate.fillScreen(BG);plate.fillCircle(56,56,51,RED);painter=&plate;textBG=RED;centered(7,16,98,"巴士站",12,PAPER);plate.fillRect(16,33,80,43,0xFFFE);textBG=0xFFFE;bigNumber(cfg.route,16,33,80,43,PLATE_INK);textBG=RED;String name=stationName();String shown;const char*rest=name.c_str();while(*rest){const char*start=rest;nextCode(rest);String ch;while(start<rest)ch+=*start++;if(textWidth((shown+ch+(*rest?"…":"")).c_str(),12)>72){shown+="…";break;}shown+=ch;}centered(20,80,72,shown.c_str(),12,PAPER);painter=&lcd;textBG=BG;
  const float co=.9986295348f,si=.0523359562f;uint16_t line[120];
  for(int y=0;y<120;y++){for(int x=0;x<120;x++){float u=(x-59.5f)*112/120.f,v=(y-59.5f)*112/120.f;float sx=co*u-si*v+55.5f,sy=si*u+co*v+55.5f;int ix=floorf(sx),iy=floorf(sy);if(ix<0||ix>=111||iy<0||iy>=111){line[x]=BG;continue;}int ax=roundf((sx-ix)*15),ay=roundf((sy-iy)*15);line[x]=blend565(blend565(plate.pixelColor(ix+1,iy+1),plate.pixelColor(ix,iy+1),ax),blend565(plate.pixelColor(ix+1,iy),plate.pixelColor(ix,iy),ax),ay);}lcd.drawRGBBitmap(6,y+1,line,120,1);}}
-void emitState(){DynamicJsonDocument d(1664);d["event"]="state";d["app"]="kmb-bus-clock";d["version"]="0.2.3";d["nightMode"]=nightMode;d["themeMode"]=themeMode;d["clockSynced"]=time(nullptr)>1700000000;d["connected"]=WiFi.status()==WL_CONNECTED;d["ip"]=WiFi.localIP().toString();d["ssid"]=wifiName;d["message"]=lastMessage;d["route"]=cfg.route;d["bound"]=String(cfg.bound);d["service"]=cfg.service;d["stop"]=cfg.stop;d["threshold"]=cfg.threshold;d["brightness"]=cfg.brightness;d["armed"]=cfg.armed;d["etaCode"]=etaCode;d["positionCode"]=positionCode;d["positionRows"]=positionRows;d["positionSamples"]=positionTracker.samples();float positionEstimate=0;d["positionReady"]=positionTracker.estimate(time(nullptr),etaEpoch,positionEstimate);d["animationVisible"]=motion.visible;d["animationFraction"]=motion.fraction;d["sentTiles"]=lcd.sentTiles;d["presents"]=lcd.presents;d["roadReady"]=activeRoad.valid;d["roadPoints"]=activeRoad.count;d["mapStops"]=activeRoad.stopCount;d["mapMeters"]=activeRoad.meters;d["mapContinuationMeters"]=activeRoad.continuationMeters;d["roadDiagnostic"]=roadDiagnostic;d["mapTlsRetries"]=mapTlsRetries;d["heap"]=ESP.getFreeHeap();d["displayReady"]=lcd.ready();d["apiDiagnostic"]=apiDiagnostic;d["apiTlsDiagnostic"]=apiTlsDiagnostic;d["apiTlsRetries"]=apiTlsRetries;d["largestHeap"]=ESP.getMaxAllocHeap();serializeJson(d,Serial);Serial.println();}
+void emitState(){DynamicJsonDocument d(1792);d["event"]="state";d["app"]="kmb-bus-clock";d["version"]="0.2.4";d["nightMode"]=nightMode;d["themeMode"]=themeMode;d["clockSynced"]=time(nullptr)>1700000000;d["connected"]=WiFi.status()==WL_CONNECTED;d["ip"]=WiFi.localIP().toString();d["ssid"]=wifiName;d["message"]=lastMessage;d["route"]=cfg.route;d["bound"]=String(cfg.bound);d["service"]=cfg.service;d["stop"]=cfg.stop;d["threshold"]=cfg.threshold;d["brightness"]=cfg.brightness;d["armed"]=cfg.armed;d["etaCode"]=etaCode;d["positionCode"]=positionCode;d["positionRows"]=positionRows;d["positionSamples"]=positionTracker.samples();d["positionSamples2"]=positionTracker.samples(1);float estimates[trackedBuses]={};bool ready[trackedBuses]={positionTracker.estimate(time(nullptr),etaEpoch,estimates[0]),positionTracker.estimate(1,time(nullptr),estimates[1])};d["positionReady"]=ready[0];d["positionReady2"]=ready[1];d["animationVisible"]=motion[0].visible;d["animationVisible2"]=motion[1].visible;d["animationCount"]=(motion[0].visible?1:0)+(motion[1].visible?1:0);d["animationFraction"]=motion[0].fraction;d["animationFraction2"]=motion[1].fraction;d["sentTiles"]=lcd.sentTiles;d["presents"]=lcd.presents;d["roadReady"]=activeRoad.valid;d["roadPoints"]=activeRoad.count;d["mapStops"]=activeRoad.stopCount;d["mapMeters"]=activeRoad.meters;d["mapContinuationMeters"]=activeRoad.continuationMeters;d["roadDiagnostic"]=roadDiagnostic;d["mapTlsRetries"]=mapTlsRetries;d["heap"]=ESP.getFreeHeap();d["displayReady"]=lcd.ready();d["apiDiagnostic"]=apiDiagnostic;d["apiTlsDiagnostic"]=apiTlsDiagnostic;d["apiTlsRetries"]=apiTlsRetries;d["largestHeap"]=ESP.getMaxAllocHeap();serializeJson(d,Serial);Serial.println();}
 void saveArmed(){prefs.putBool("armed",cfg.armed);}
 void defaultStops(){strlcpy(cfg.stops[0].id,"1741D103CB826E93",17);strlcpy(cfg.stops[0].name,"大涌口",100);cfg.stops[0].lat=22.372007;cfg.stops[0].lng=114.260106;cfg.stops[0].seq=6;strlcpy(cfg.stops[1].id,"4823D6EFB3722E64",17);strlcpy(cfg.stops[1].name,"白沙臺",100);cfg.stops[1].lat=22.367542;cfg.stops[1].lng=114.260133;cfg.stops[1].seq=7;strlcpy(cfg.stops[2].id,cfg.stop,17);strlcpy(cfg.stops[2].name,"白沙灣",100);cfg.stops[2].lat=22.364778;cfg.stops[2].lng=114.259413;cfg.stops[2].seq=8;}
 bool validID(const char*s){if(strlen(s)!=16)return false;for(int i=0;i<16;i++)if(!isxdigit(s[i]))return false;return true;}
@@ -85,7 +86,7 @@ bool applyConfig(JsonDocument&d,bool persist){
  if(strcmp(next.stops[next.count-1].id,stop))return false;
  String newSSID=d["ssid"]|"",newPass=d["password"]|"";if(newSSID.length()>32||newPass.length()>63)return false;
  if(newSSID.length()&&newSSID!=wifiName&&newPass.length()==0&&wifiName.length())return false;
- bool sameMap=!strcmp(cfg.route,next.route)&&cfg.bound==next.bound&&cfg.service==next.service&&!strcmp(cfg.stop,next.stop);cfg=next;cfg.gen++;if(sameMap&&activeRoad.valid){activeRoad.gen=cfg.gen;roadTriedGen=cfg.gen;}else{activeRoad.valid=false;roadTriedGen=0;}motion.reset();positionTracker.reset();lastPositionPoll=0;markerPainted=false;alarmOn=false;etaEpoch=0;etaCode=0;dataStamp=0;needsDraw=true;lastPoll=0;failures=0;
+ bool sameMap=!strcmp(cfg.route,next.route)&&cfg.bound==next.bound&&cfg.service==next.service&&!strcmp(cfg.stop,next.stop);cfg=next;cfg.gen++;if(sameMap&&activeRoad.valid){activeRoad.gen=cfg.gen;roadTriedGen=cfg.gen;}else{activeRoad.valid=false;roadTriedGen=0;}resetMotions();positionTracker.reset();lastPositionPoll=0;alarmOn=false;etaEpoch=0;etaCode=0;dataStamp=0;needsDraw=true;lastPoll=0;failures=0;
  if(persist){d.remove("ssid");d.remove("password");d.remove("key");String safe;serializeJson(d,safe);prefs.putString("config",safe);saveArmed();}
  if(newSSID.length()&&(newSSID!=wifiName||newPass.length())){wifiName=newSSID;if(newPass.length())wifiPassword=newPass;if(persist){prefs.putString("ssid",wifiName);prefs.putString("pass",wifiPassword);}WiFi.begin(wifiName.c_str(),wifiPassword.c_str());}
  ledcWrite(0,cfg.brightness);lastMessage="設定已儲存；正在連線及核對路線";emitState();return true;
@@ -111,30 +112,16 @@ void drawMain(){textBG=BG;lcd.fillScreen(BG);drawPlate();
  lcd.fillRoundRect(12,204,296,28,7,alarmOn?RED:INK);textBG=alarmOn?RED:INK;centered(12,210,296,alarmOn?"停止":cfg.armed?"取消提醒":"提醒我",16,alarmOn?PAPER:BG);
  textBG=BG;if(alarmOn)lcd.drawRect(0,0,320,240,RED);
 }
-void drawMap(){markerPainted=false;mapActualRoad=false;if(activeRoad.valid&&activeRoad.gen==cfg.gen){drawDownloadedMap();return;}lcd.fillRoundRect(134,35,174,140,10,MAP);mapGrid();textBG=MAP;centered(134,92,174,roadTriedGen==cfg.gen?"路線圖暫缺":"載入中",16);textBG=BG;lcd.fillRect(134,175,174,27,BG);label(136,185,"3km · 估算",12);}
+void drawMap(){markerPainted=false;markerCount=0;mapActualRoad=false;if(activeRoad.valid&&activeRoad.gen==cfg.gen){drawDownloadedMap();return;}lcd.fillRoundRect(134,35,174,140,10,MAP);mapGrid();textBG=MAP;centered(134,92,174,roadTriedGen==cfg.gen?"路線圖暫缺":"載入中",16);textBG=BG;lcd.fillRect(134,175,174,27,BG);label(136,185,"3km · 估算",12);}
 #include "map_render.inc"
 void restoreMarker(){if(markerPainted)drawMap();markerPainted=false;}
+void drawBusMarker(int x,int y,int alpha){GFXcanvas16 sprite(22,26);if(!sprite.getBuffer())return;for(int yy=0;yy<26;yy++)for(int xx=0;xx<22;xx++)sprite.drawPixel(xx,yy,lcd.pixelColor(x-11+xx,y-13+yy));sprite.fillRoundRect(2,0,18,24,6,0xFFDD);sprite.fillRoundRect(3,1,16,22,5,0xD328);sprite.fillRoundRect(6,4,10,5,2,0xBEDB);sprite.fillRoundRect(6,11,10,5,2,0xBEDB);sprite.fillCircle(6,19,1,0xFFDD);sprite.fillCircle(15,19,1,0xFFDD);sprite.drawLine(9,19,10,20,INK);sprite.drawLine(10,20,12,19,INK);sprite.fillRect(5,23,3,2,INK);sprite.fillRect(14,23,3,2,INK);if(alpha<15)for(int yy=0;yy<26;yy++)for(int xx=0;xx<22;xx++){auto&p=sprite.getBuffer()[yy*22+xx];p=blend565(p,lcd.pixelColor(x-11+xx,y-13+yy),alpha);}lcd.drawRGBBitmap(x-11,y-13,sprite.getBuffer(),22,26);}
 void updateAnimation(){
  const unsigned long tick=millis();const float seconds=lastAnimation?(tick-lastAnimation)/1000.0f:.1f;lastAnimation=tick;
- time_t now=time(nullptr);if(!activeRoad.valid||activeRoad.count<2){motion.reset();restoreMarker();return;}float estimated=0;bool valid=activeRoad.gen==cfg.gen&&animationFresh(WiFi.status()==WL_CONNECTED,etaCode,now,dataStamp,etaEpoch)&&positionTracker.estimate(now,etaEpoch,estimated);motion.update(valid,estimated,seconds);
- if(!motion.visible){restoreMarker();return;}
- bool downloaded=activeRoad.valid&&activeRoad.gen==cfg.gen;
- const int count=activeRoad.count;
- auto point=[&](int i,int axis)->float{return axis?activeRoad.points[i].y:activeRoad.points[i].x;};
- float x=point(0,0),y=point(0,1);for(int i=1;i<count;i++){float a=activeRoad.pointFractions[i-1],b=activeRoad.pointFractions[i];if(motion.fraction<=b||i==count-1){float t=b>a?constrain((motion.fraction-a)/(b-a),0.f,1.f):0;x=point(i-1,0)+(point(i,0)-point(i-1,0))*t;y=point(i-1,1)+(point(i,1)-point(i-1,1))*t;break;}}
- const int bob=motion.fraction<.995f?((tick/650)%2):0;
- int nextX=constrain((int)roundf(x),145,296),nextY=constrain((int)roundf(y)+bob,48,161);
- int alpha=roundf(motion.opacity*15);if(markerPainted&&markerX==nextX&&markerY==nextY&&markerAlpha==alpha)return;
- restoreMarker();markerX=nextX;markerY=nextY;markerAlpha=alpha;
- GFXcanvas16 sprite(22,26);if(!sprite.getBuffer())return;
- for(int y=0;y<26;y++)for(int x=0;x<22;x++)sprite.drawPixel(x,y,lcd.pixelColor(markerX-11+x,markerY-13+y));
- sprite.fillRoundRect(2,0,18,24,6,0xFFDD);sprite.fillRoundRect(3,1,16,22,5,0xD328);
- sprite.fillRoundRect(6,4,10,5,2,0xBEDB);sprite.fillRoundRect(6,11,10,5,2,0xBEDB);
- sprite.fillCircle(6,19,1,0xFFDD);sprite.fillCircle(15,19,1,0xFFDD);
- sprite.drawLine(9,19,10,20,INK);sprite.drawLine(10,20,12,19,INK);
- sprite.fillRect(5,23,3,2,INK);sprite.fillRect(14,23,3,2,INK);
- if(alpha<15)for(int y=0;y<26;y++)for(int x=0;x<22;x++){auto&p=sprite.getBuffer()[y*22+x];p=blend565(p,lcd.pixelColor(markerX-11+x,markerY-13+y),alpha);}
- lcd.drawRGBBitmap(markerX-11,markerY-13,sprite.getBuffer(),22,26);markerPainted=true;
+ time_t now=time(nullptr);if(!activeRoad.valid||activeRoad.approachCount<2){for(auto&m:motion)m.reset();restoreMarker();return;}float estimated[trackedBuses]={};bool fresh=activeRoad.gen==cfg.gen&&animationFresh(WiFi.status()==WL_CONNECTED,etaCode,now,dataStamp,etaEpoch);bool valid[trackedBuses]={fresh&&positionTracker.estimate(now,etaEpoch,estimated[0]),fresh&&positionTracker.estimate(1,now,estimated[1])};for(int i=0;i<trackedBuses;i++)motion[i].update(valid[i],estimated[i],seconds);
+ int nextCount=0,nextX[trackedBuses]={},nextY[trackedBuses]={},nextAlpha[trackedBuses]={};const int count=activeRoad.approachCount;auto point=[&](int i,int axis)->float{return axis?activeRoad.points[i].y:activeRoad.points[i].x;};
+ for(int bus=0;bus<trackedBuses;bus++){if(!motion[bus].visible)continue;float x=point(0,0),y=point(0,1);for(int i=1;i<count;i++){float a=activeRoad.pointFractions[i-1],b=activeRoad.pointFractions[i];if(motion[bus].fraction<=b||i==count-1){float u=b>a?constrain((motion[bus].fraction-a)/(b-a),0.f,1.f):0;x=point(i-1,0)+(point(i,0)-point(i-1,0))*u;y=point(i-1,1)+(point(i,1)-point(i-1,1))*u;break;}}int bob=motion[bus].fraction<.995f?((tick/650+bus)%2):0;nextX[nextCount]=constrain((int)roundf(x),145,296);nextY[nextCount]=constrain((int)roundf(y)+bob,48,161);nextAlpha[nextCount]=roundf(motion[bus].opacity*15);nextCount++;}
+ bool unchanged=markerPainted&&markerCount==nextCount;for(int i=0;i<nextCount&&unchanged;i++)unchanged=markerX[i]==nextX[i]&&markerY[i]==nextY[i]&&markerAlpha[i]==nextAlpha[i];if(unchanged)return;if(markerPainted)restoreMarker();for(int i=0;i<nextCount;i++){markerX[i]=nextX[i];markerY[i]=nextY[i];markerAlpha[i]=nextAlpha[i];drawBusMarker(markerX[i],markerY[i],markerAlpha[i]);}markerCount=nextCount;markerPainted=nextCount>0;
 }
 #include "wifi_setup.inc"
 #include "native_settings.inc"
