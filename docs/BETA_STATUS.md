@@ -1,3 +1,7 @@
+# Two persistent buses —0.2.7 (2026-09-10)
+
+At Sum's request, both of the first two distinct official target forecasts now have guess/hold/recovery behavior, including scheduled forecasts. The existing target response supplies the second ETA; there are no extra network requests. A matching second journey is promoted when the first arrival rolls over. When sprites overlap, artwork is offset within the same map so both remain distinguishable. Official main ETA/alerts and the strict multi-stop matcher are unchanged. App-only installation/digest verification passes; real1A framebuffer verifies two complete distinct bus bodies while both strict matches are unavailable. See [two-bus validation](TWO_BUS_ILLUSTRATION_0.2.7.md).
+
 # Persistent primary bus —0.2.6 (2026-09-10)
 
 At Sum's explicit request, a fresh ETA now seeds a rough primary bus position even without a reliable multi-stop match. After matching, temporary missing/ambiguous/stale data holds the last position; recovery corrects it without blinking away. The main ETA/alerts remain source-based and the map stays labelled估算. Two matcher bugs are also fixed; all host suites and separate personal/OFL builds pass. App-only physical installation/digest verification completed; framebuffer has the little bus while strict matching is unavailable, and subsequent state confirms held visibility. Saved2A, Wi-Fi, main ETA/map and1A BOTH destination stop lists pass without saving. See [audit evidence](POSITION_AUDIT_2026-09-10.md).

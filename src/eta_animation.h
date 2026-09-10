@@ -3,7 +3,7 @@
 #include <cmath>
 #include <algorithm>
 inline bool animationFresh(bool connected,int code,std::time_t now,std::time_t stamp,std::time_t eta){return connected&&code==2&&stamp>0&&std::abs(double(now-stamp))<=120&&eta>=now-30&&eta<=now+10800;}
-// Rendering only: position comes from matched multi-stop forecasts, never a fixed timer.
+// Rendering only: callers choose matched, approximate or held positions.
 struct ApproachMotion{
  bool visible=false;float fraction=0,opacity=0;
  void reset(){visible=false;fraction=opacity=0;}
@@ -36,3 +36,21 @@ struct PersistentApproach{
  }
  const char* status()const{return mode==ETA_GUESS?"eta-guess":mode==MATCHED?"matched":mode==HELD?"held":"none";}
 };
+
+inline void alignIllustratedPair(PersistentApproach&first,PersistentApproach&second,std::time_t now,bool fresh,std::time_t target,bool nextFresh,std::time_t next){
+ if(fresh&&first.lastTarget&&first.lastTarget<=now+30&&target>first.lastTarget+90){
+  // Promote the known following journey; never leave a duplicate of it behind.
+  if(second.initialized&&std::abs(double(target-second.lastTarget))<=90)first=second;
+  else first.reset();
+  second.reset();
+ }
+ if(nextFresh&&second.lastTarget&&std::abs(double(next-second.lastTarget))>90)second.reset();
+}
+
+// Two 22x26 sprites must remain distinguishable even when both estimates wait
+// at the map entrance. Offset only the artwork, not the route fractions.
+inline void separateMarkerCenters(int&x1,int&y1,int&x2,int&y2){
+ if(std::abs(x1-x2)>=24||std::abs(y1-y2)>=28)return;
+ const bool firstLeft=x1<=x2;const int center=std::max(157,std::min(284,(x1+x2)/2));
+ x1=center+(firstLeft?-12:12);x2=center+(firstLeft?12:-12);
+}

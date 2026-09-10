@@ -43,6 +43,7 @@ class EtaPositionTracker{
  public:
  int samples(int index=0)const{return index>=0&&index<trackedBuses?confirmations[index]:0;}
  int count()const{return (accepted[0].valid?1:0)+(accepted[1].valid?1:0);}
+ std::time_t targetEta(int index)const{return index>=0&&index<trackedBuses&&accepted[index].valid?accepted[index].target:0;}
  const char* status(int index,std::time_t now,std::time_t target=0)const{
   if(index<0||index>=trackedBuses)return "invalid-index";
   const auto&p=accepted[index];if(!p.valid)return confirmations[index]?"warming":"unmatched";
