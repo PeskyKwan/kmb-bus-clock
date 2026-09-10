@@ -26,7 +26,7 @@
       "path": "firmware/firmware.bin",
       "offset": 65536,
       "size": 2295072,
-      "sha256": "44a336ec3d3b63f1c6ece03ea487f31aa8bee70aacfdf0db3bf3838e4d63bd3b"
+      "sha256": "e4f69e89d2863e0112c5cfe3b18054ddffb451ad2088da423fe52937c23c37fb"
     }
   ]
 }
