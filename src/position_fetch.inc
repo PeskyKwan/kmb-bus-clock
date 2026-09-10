@@ -1,5 +1,6 @@
 #include "position_decode.h"
 EtaFrame pendingFrame;
+volatile int positionHttpDiagnostic=0,positionTlsDiagnostic=0;
 EtaLayout positionLayout(const RoadData&road){EtaLayout out;out.meters=road.meters;if(road.leadSeq){out.anchors[out.count++]={road.leadSeq,road.leadFraction};}const int room=positionAnchors-out.count,n=std::min(room,road.stopCount);for(int j=0;j<n;j++){int i=n>1?(int)std::lround(j*(road.stopCount-1)/float(n-1)):road.stopCount-1;if(road.stopSeq[i]>0)out.anchors[out.count++]={road.stopSeq[i],road.stopFractions[i]};}return out;}
 // Bounded streaming row parser: never retain the whole route response during TLS.
 class PositionStream:public Stream{
@@ -18,7 +19,8 @@ bool fetchPosition(const Request&req){
  pendingFrame=EtaFrame{};pendingFrame.layout=req.layout;
  WiFiClientSecure tls;tls.setCACert(kmbCA);tls.setHandshakeTimeout(10);HTTPClient http;http.setConnectTimeout(5000);http.setTimeout(5000);http.useHTTP10(true);
  if(!http.begin(tls,"https://data.etabus.gov.hk/v1/transport/kmb/route-eta/"+String(req.c.route)+"/"+String(req.c.service)))return false;
- if(http.GET()!=200||http.getSize()>262144){http.end();return false;}
+ int code=http.GET();positionHttpDiagnostic=code;char error[1];positionTlsDiagnostic=code<0?tls.lastError(error,sizeof(error)):0;
+ if(code!=200||http.getSize()>262144){http.end();return false;}
  PositionStream stream(http.getStream());bool ok=decodePosition(stream,pendingFrame,req.c.route,req.c.bound,req.c.service,req.c.destination,time(nullptr));
  http.end();return ok;
 }

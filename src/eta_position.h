@@ -33,19 +33,37 @@ class EtaPositionTracker{
  }
  bool estimatePath(const EtaPath&p,std::time_t now,float&fraction)const{
   if(!p.valid||now<p.stamp-15||now-p.stamp>90)return false;
-  for(int i=p.first;i<p.count-1;i++){auto a=p.rows[i],b=p.rows[i+1];if(!usablePositionForecast(a,now)||!usablePositionForecast(b,now))return false;if(a.eta<=now&&now<b.eta){double u=difftime(now,a.eta)/difftime(b.eta,a.eta);fraction=p.layout.anchors[i].fraction+u*(p.layout.anchors[i+1].fraction-p.layout.anchors[i].fraction);return fraction>=0&&fraction<=1;}}
+  for(int i=p.first;i<p.count-1;i++){auto a=p.rows[i],b=p.rows[i+1];if(a.eta<=now&&now<b.eta){
+   // Only the bracketing anchors support the current estimate. An already
+   // traversed anchor expiring must not hide a still-fresh downstream bracket.
+   if(!usablePositionForecast(a,now)||!usablePositionForecast(b,now))return false;
+   double u=difftime(now,a.eta)/difftime(b.eta,a.eta);fraction=p.layout.anchors[i].fraction+u*(p.layout.anchors[i+1].fraction-p.layout.anchors[i].fraction);return fraction>=0&&fraction<=1;}}
   return false;
  }
  public:
  int samples(int index=0)const{return index>=0&&index<trackedBuses?confirmations[index]:0;}
  int count()const{return (accepted[0].valid?1:0)+(accepted[1].valid?1:0);}
+ const char* status(int index,std::time_t now,std::time_t target=0)const{
+  if(index<0||index>=trackedBuses)return "invalid-index";
+  const auto&p=accepted[index];if(!p.valid)return confirmations[index]?"warming":"unmatched";
+  if(target&&std::abs(double(target-p.target))>90)return "target-changed";
+  if(now<p.stamp-15||now-p.stamp>90)return "history-expired";
+  float fraction;if(estimatePath(p,now,fraction))return "ready";
+  if(now<p.rows[p.first].eta)return "before-anchors";
+  if(now>=p.target)return "past-target";
+  return "no-fresh-bracket";
+ }
  void reset(){for(int i=0;i<trackedBuses;i++){previous[i]={};accepted[i]={};confirmations[i]=0;}}
  bool accept(const EtaFrame&f,std::time_t now,std::time_t target){
   const int n=f.layout.count;if(n<2||n>positionAnchors||f.layout.meters<=0||!f.generated||std::abs(double(now-f.generated))>120){reset();return false;}
   for(int i=1;i<n;i++)if(f.layout.anchors[i].seq<=f.layout.anchors[i-1].seq||f.layout.anchors[i].fraction<f.layout.anchors[i-1].fraction){reset();return false;}
-  StopForecast targets[trackedBuses];int targetCount=0,matches=0;
-  for(int j=0;j<f.counts[n-1];j++){auto r=f.rows[n-1][j];if(usablePositionForecast(r,now)&&std::abs(double(r.eta-target))<=90){targets[0]=r;matches++;}}
-  if(matches!=1){reset();return false;}targetCount=1;
+  StopForecast targets[trackedBuses],exactTarget;int targetCount=0,matches=0,exact=0;
+  for(int j=0;j<f.counts[n-1];j++){auto r=f.rows[n-1][j];if(r.eta==target){exactTarget=r;exact++;}if(usablePositionForecast(r,now)&&std::abs(double(r.eta-target))<=90){targets[0]=r;matches++;}}
+  // The official stop ETA identifies an exact route-feed forecast when unique.
+  // A nearby different journey must not erase that identity on frequent routes.
+  // An exact scheduled/stale/duplicate row cannot fall through to a nearby bus.
+  if(exact){if(exact!=1||!usablePositionForecast(exactTarget,now)){reset();return false;}targets[0]=exactTarget;}
+  else if(matches!=1){reset();return false;}targetCount=1;
   for(int j=0;j<f.counts[n-1];j++){auto r=f.rows[n-1][j];if(!usablePositionForecast(r,now)||r.eta<=targets[0].eta+90)continue;if(targetCount==1||r.eta<targets[1].eta){targets[1]=r;targetCount=2;}}
   EtaPath built[trackedBuses];for(int k=0;k<trackedBuses;k++){
    if(k>=targetCount){previous[k]={};accepted[k]={};confirmations[k]=0;continue;}bool same=false;if(!build(f,now,targets[k],previous[k],k?&built[0]:nullptr,built[k],same)){previous[k]={};accepted[k]={};confirmations[k]=0;if(k==0){previous[1]={};accepted[1]={};confirmations[1]=0;return false;}continue;}

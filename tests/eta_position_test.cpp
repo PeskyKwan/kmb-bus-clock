@@ -10,6 +10,27 @@ int main(){const time_t t=100000;float p;EtaPositionTracker tracker;auto a=frame
  // Two plausible cars at the preceding stop are ambiguous.
  tracker.reset();a=frame(t);a.add(7,{t+30,t,false});assert(!tracker.accept(a,t,t+160));
  tracker.reset();a=frame(t);a.rows[2][0].rank=1;a.add(8,{t+160,t,false,2});assert(!tracker.accept(a,t,t+160));
+ // Distinct frequent journeys must not make a UNIQUE exact official ETA ambiguous.
+ // Live 1A on 2026-09-10 had 87-second headway: both targets fell inside +/-90.
+ tracker.reset();a=frame(t);a.rows[2][0].rank=1;a.add(8,{t+247,t,false,2});
+ assert(!tracker.accept(a,t,t+160)&&tracker.samples()==1);
+ b=a;b.generated=t+30;for(int i=0;i<3;i++)for(int j=0;j<b.counts[i];j++)b.rows[i][j].stamp=t+30;
+ assert(tracker.accept(b,t+30,t+160)&&tracker.estimate(t+30,t+160,p));
+ // A non-exact target between those journeys is still ambiguous. Never widen gates.
+ tracker.reset();assert(!tracker.accept(a,t,t+190)&&tracker.samples()==0);
+ // Two equal exact timestamps with different forecast ranks stay ambiguous too.
+ a.add(8,{t+160,t,false,3});assert(!tracker.accept(a,t,t+160));
+ // Exact scheduled/stale targets must not borrow the neighbouring live journey.
+ a=frame(t);a.rows[2][0].scheduled=true;a.add(8,{t+200,t,false,2});
+ tracker.reset();assert(!tracker.accept(a,t,t+160)&&tracker.samples()==0);
+ a.rows[2][0].scheduled=false;a.rows[2][0].stamp=t-121;
+ assert(!tracker.accept(a,t,t+160)&&tracker.samples()==0);
+ // Expiry of a CURRENT bracketing anchor must still hide the marker.
+ tracker.reset();a=frame(t);a.rows[0][0].eta=t-170;
+ tracker.accept(a,t,t+160);b=a;b.generated=t+1;
+ for(int i=0;i<3;i++)b.rows[i][0].stamp=t+1;
+ assert(tracker.accept(b,t+1,t+160));assert(tracker.estimate(t+2,t+160,p));
+ assert(!tracker.estimate(t+11,t+160,p));
  // A new bus gets a new warm-up rather than driving the old marker backwards.
  tracker.reset();a=frame(t);tracker.accept(a,t,t+160);b=frame(t+30);tracker.accept(b,t+30,t+160);for(int i=0;i<3;i++)b.rows[i][0].eta+=1200;b.generated=t+60;assert(!tracker.accept(b,t+60,t+1360));
  // Recently removed upstream ETA can be bridged ONLY from a matched history.

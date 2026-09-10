@@ -1,3 +1,7 @@
+# Persistent primary bus —0.2.6 (2026-09-10)
+
+At Sum's explicit request, a fresh ETA now seeds a rough primary bus position even without a reliable multi-stop match. After matching, temporary missing/ambiguous/stale data holds the last position; recovery corrects it without blinking away. The main ETA/alerts remain source-based and the map stays labelled估算. Two matcher bugs are also fixed; all host suites and separate personal/OFL builds pass. App-only physical installation/digest verification completed; framebuffer has the little bus while strict matching is unavailable, and subsequent state confirms held visibility. Saved2A, Wi-Fi, main ETA/map and1A BOTH destination stop lists pass without saving. See [audit evidence](POSITION_AUDIT_2026-09-10.md).
+
 # Multi-stop animation update —0.2.1
 
 The marker now uses up to12 road-distance ETA anchors and up to3 forecasts per anchor. It requires two distinct provider updates and a unique compatible chain near the target. Schedule-only/ambiguous/stale cases fade out; the large ETA and one-shot alert logic are unchanged. Fixed600s progress removed. Host tests cover ranking changes, ambiguity, schedules, history, freshness and malformed streaming input. Physical ground-truth location accuracy is not certified.

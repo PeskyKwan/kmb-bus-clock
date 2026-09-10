@@ -1,42 +1,25 @@
 """USB route-chooser regression: 1A search and both directions, never saves."""
-import argparse,json,time,os,select,termios,tty
+import argparse,time
+from device_position_audit import NoResetSerial
 
 p=argparse.ArgumentParser();p.add_argument('--port',required=True);args=p.parse_args()
-fd=os.open(args.port,os.O_RDWR|os.O_NOCTTY|os.O_NONBLOCK);tty.setraw(fd);attrs=termios.tcgetattr(fd);attrs[4]=termios.B115200;attrs[5]=termios.B115200;termios.tcsetattr(fd,termios.TCSANOW,attrs);rx=b''
 
-def write(data):os.write(fd,data)
-def readline(timeout=.4):
- global rx
- end=time.monotonic()+timeout
- while time.monotonic()<end:
-  if b'\n' in rx:
-   line,rx=rx.split(b'\n',1);return line
-  ready,_,_=select.select([fd],[],[],min(.2,end-time.monotonic()))
-  if ready:
-   try:rx+=os.read(fd,8192)
-   except BlockingIOError:pass
- return b''
+def exchange(payload,event):
+ # A CH340 handle can become invalid between commands. Open only for each
+ # exchange, without DTR/RTS resets; cleanup gets its own fresh handle too.
+ serial=NoResetSerial(args.port)
+ try:return serial.command(payload,event,timeout=20)
+ finally:serial.close()
 
 def command(action='status',**fields):
- payload={'cmd':'settings','action':action};payload.update(fields);write((json.dumps(payload)+'\n').encode());end=time.monotonic()+20
- while time.monotonic()<end:
-  raw=readline()
-  try:r=json.loads(raw)
-  except (ValueError,UnicodeError):
-   line=raw.decode(errors='replace').strip()
-   if line.startswith('NATIVE_ERROR'):print(line,flush=True)
-   continue
-  if r.get('event')=='settings':return r
- raise TimeoutError(action)
+ payload={'cmd':'settings','action':action};payload.update(fields)
+ return exchange(payload,'settings')
 
 def wait_ready():
  end=time.monotonic()+60
  while time.monotonic()<end:
-  write(b'{"cmd":"state"}\n');until=time.monotonic()+5
-  while time.monotonic()<until:
-   try:r=json.loads(readline())
-   except (ValueError,UnicodeError):continue
-   if r.get('event')=='state' and r.get('connected') and r.get('etaCode') in (1,2):return
+  r=exchange({'cmd':'state'},'state')
+  if r.get('connected') and r.get('etaCode') in (1,2):return
   time.sleep(.5)
  raise TimeoutError('Wi-Fi')
 
@@ -66,4 +49,3 @@ try:
 finally:
  try:command('close')
  except Exception:pass
- os.close(fd)

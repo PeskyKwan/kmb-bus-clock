@@ -51,3 +51,6 @@ Use夜間 instead of深色. Gear must be recognizable (stock allowed if needed);
 
 ## Approved animation-only improvement —2026-09-10
 Sum authorized more data-supported bus movement using upstream ETA. No new on-screen text, settings or layout changes. Keep the official target-stop ETA/alerts unchanged; hide/fade uncertain position estimates instead of a fixed countdown position.
+
+## User-approved persistent illustration —2026-09-10 (supersedes hide-on-uncertainty)
+Sum explicitly requires the primary little bus to remain visible: seed a rough position from the official ETA if a reliable multi-stop position is unavailable, hold the last matched position through temporary uncertainty or missing updates, and correct it when a supported match returns. Lagging/approximate placement is preferred to disappearing. Keep the existing估算 caption; neither the rough nor matched position is GPS. Reset for a changed route/stop or next arrival as appropriate. Main official ETA/alerts, map bounds/layout and all fonts remain unchanged. The optional second bus still requires its own supported chain.

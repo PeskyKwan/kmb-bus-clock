@@ -122,6 +122,8 @@ c++ -std=c++17 tests/eta_position_test.cpp -o /tmp/kmb-position-tests
 /tmp/kmb-position-tests
 c++ -std=c++17 -I.pio/libdeps/board/ArduinoJson/src tests/position_decode_test.cpp -o /tmp/kmb-decode-tests
 /tmp/kmb-decode-tests
+c++ -std=c++17 -I.pio/libdeps/board/ArduinoJson/src tests/position_replay_test.cpp -o /tmp/kmb-position-replay
+/tmp/kmb-position-replay
 c++ -std=c++17 tests/native_input_test.cpp -o /tmp/kmb-native-input
 /tmp/kmb-native-input
 c++ -std=c++17 tests/map_render_test.cpp -o /tmp/kmb-map-tests
@@ -131,6 +133,12 @@ pio run
 ```
 
 The ETA/animation/map/tile checks cover timezone conversion, invalid/null timestamps, stale/future data, offline state, arming and threshold boundaries. They are not a substitute for device, route and real-trip testing.
+
+The primary little bus is an illustration: it starts from a rough ETA-based position, holds its last matched location if updates become uncertain, and corrects when supported matching returns. It may lag or sit near the map entrance for a distant arrival. The map remains labelled估算; no marker is GPS. Main ETA/alerts keep their original freshness checks. The optional second bus still requires an independently supported chain.
+
+For read-only USB position diagnostics, use `python3 tests/device_position_audit.py --port PORT --output /tmp/kmb-position-audit --position --samples 4`. This uses POSIX serial access without toggling DTR/RTS or resetting the board. `--feeds` also captures the current official target and route responses. Network identifiers are omitted from saved state. If the OS reports `Device not configured`, close the reader and try one fresh no-reset open; this recovered the invalid handle during device QA. If that also fails, reconnect the USB device. Never blindly replay a configuration-changing command after a disconnect; query the current state first. No-reset access does not guarantee a healthy USB driver.
+
+The USB command `{"cmd":"position"}` reports target timestamps/freshness, route-poll age, HTTP/TLS diagnostics, matching status, and the latest frame's anchor rows `[eta, timestamp, scheduled, rank]`. Busy responses omit the frame while the worker owns it. `ready` describes a supported estimate; the main ETA/connectivity gate still controls visibility. No extra on-screen controls are added. See the [position audit](docs/POSITION_AUDIT_2026-09-10.md) for evidence and remaining device checks.
 
 ## Contributing
 
