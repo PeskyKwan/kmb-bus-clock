@@ -1,6 +1,6 @@
 {
   "name": "KMB Bus Clock",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "chip": "ESP32",
   "board": "E32R28T-1",
   "parts": [
@@ -25,8 +25,8 @@
     {
       "path": "firmware/firmware.bin",
       "offset": 65536,
-      "size": 2280080,
-      "sha256": "596d8e70b3562d6e40bd6204314761ff966acb653ef8280ba26a2c1e6b784511"
+      "size": 2293712,
+      "sha256": "ee2c01e3c2dff75fdc7d7f1e41494fdfde30a8b4e075f5ea2d891a685b570a9d"
     }
   ]
 }
