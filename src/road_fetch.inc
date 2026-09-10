@@ -6,8 +6,8 @@
 #include "stop_catalog.h"
 bool api(const String&,DynamicJsonDocument&);
 RoadData pendingRoad,activeRoad;
-uint32_t roadTriedGen=0;volatile int roadDiagnostic=0;
-bool downloadRoad(uint32_t id,char bound,std::vector<GeoPoint>&points){
+uint32_t roadTriedGen=0;volatile int roadDiagnostic=0,mapTlsRetries=0;
+bool downloadRoadOnce(uint32_t id,char bound,std::vector<GeoPoint>&points){
  WiFiClientSecure tls;tls.setCACert(mapCA);HTTPClient h;h.setConnectTimeout(6000);h.setTimeout(7000);h.useHTTP10(true);
  String url="https://hkbus.github.io/route-waypoints/"+String(id)+"-"+String(bound)+".json";
  if(!h.begin(tls,url)){roadDiagnostic=-100;return false;}int httpCode=h.GET();if(httpCode!=200){char errorText[1];int tlsCode=tls.lastError(errorText,sizeof(errorText));roadDiagnostic=tlsCode?tlsCode:httpCode;h.end();return false;}auto&stream=h.getStream();stream.setTimeout(7000);
@@ -21,6 +21,7 @@ bool downloadRoad(uint32_t id,char bound,std::vector<GeoPoint>&points){
  }
  h.end();return done&&!bad&&simplify.finish()&&points.size()>1;
 }
+bool downloadRoad(uint32_t id,char bound,std::vector<GeoPoint>&points){if(downloadRoadOnce(id,bound,points))return true;if(roadDiagnostic!=tlsConnectionEof)return false;points.clear();mapTlsRetries++;delay(300);return downloadRoadOnce(id,bound,points);}
 bool cachedStop(const char*id,WindowStop&stop){uint64_t key=strtoull(id,nullptr,16);int l=0,r=stopLabelCount-1;while(l<=r){int m=(l+r)/2;StopLabelEntry entry;memcpy_P(&entry,stopLabels+m,sizeof(entry));if(entry.id==key){stop.point={(float)(entry.lng/1e6),(float)(entry.lat/1e6)};stop.label=entry.offset;return true;}if(entry.id<key)l=m+1;else r=m-1;}return false;}
 struct RoadStopCandidate{WindowStop stop;int seq;};
 std::vector<RoadStopCandidate> cachedRoadStops;uint32_t roadStopsGen=0;unsigned long roadAttemptAt=0;

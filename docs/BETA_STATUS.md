@@ -39,6 +39,7 @@ No changes to the live KMB Brain website are required to use this project.
 ## Approved3km approach window
 - Fixed3-stop framing replaced by up to3km measured along the incoming road, keeping geographic direction and all matched upstream station dots (up to64 capacity), with up to3 key labels. Nearby origin limits the segment. No walking/preparation logic added.
 - Beta0.2.2 adds a faded road continuation after the selected boarding stop. The context-only extension is normally15% of the approach, bounded to150–450m and clipped at the route endpoint; it does not enter the bus animation, ETA or reminder logic.
+- Beta0.2.3 immediately retries one observed TLS connection-EOF during KMB ETA validation or map loading. CA verification remains mandatory; all other failures retain the bounded backoff and honest unavailable state.
 - Source simplification checks all intermediate points against~2m deviation and keeps vertices no farther than80m apart; this permits dense92 data to fit in memory. Host fixtures:2A at Ngau Tau Kok has~982m available;92 Pak Sha Wan has3000m.
 
 - Final on-device3km-version checks:2A near route origin displays982.4m,3 markers and31 rendered points; ETA/display ready. Blank tap0tiles, key entry2/300,20s idle16tiles. Route-stop data is reused from validation; failed map loads retry after30s.
