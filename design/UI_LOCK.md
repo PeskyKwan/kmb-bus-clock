@@ -57,3 +57,6 @@ Sum explicitly requires the primary little bus to remain visible: seed a rough p
 
 ## User-approved second persistent illustration —2026-09-10
 Sum still wants to see two little buses. Extend the same guess/hold/recovery behavior to the next distinct official target ETA, including scheduled forecasts. Do not invent an extra arrival if only one forecast exists. Keep both 22×26 sprites distinguishable by a small screen-space offset when they overlap; retain their underlying route fractions and existing估算 caption. Promote the second illustrated journey when it becomes the first, without duplicating it. No other UI/layout changes.
+
+## User-approved scheduled sleep animation —2026-09-13
+Sum requested a playful, gently moving `zZ` sign beside a bus that is scheduled but not yet moving. Show the small custom-drawn sign only when the official target row is marked Scheduled Bus, the illustration has no supported matched movement and remains at the map entrance. Remove it as soon as that journey is no longer scheduled or its ETA illustration advances. Adjacent sleeping buses share one `zZ` cluster to avoid label overlap. This is an ETA-status illustration, not proof that a physical bus is parked at the terminal or GPS-tracked. Preserve the locked map, labels, palette and all other layout.

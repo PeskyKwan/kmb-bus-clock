@@ -9,9 +9,11 @@ WifiRow wifiRows[20];int wifiCount=0,wifiStage=0,wifiScanDiagnostic=0;
 String wifiCandidate,wifiCandidatePass,wifiNotice="",wifiPreviousName,wifiPreviousPass;
 unsigned long wifiStarted=0;
 bool wifiWorkActive(){return wifiStage!=0;}
+bool wifiStored(const String&name){return storedWifiName(name.c_str(),wifiName.c_str(),wifiPreviousName.c_str());}
+bool wifiActive(const String&name){String active=WiFi.status()==WL_CONNECTED?WiFi.SSID():"";return activeWifiName(name.c_str(),WiFi.status()==WL_CONNECTED,active.c_str());}
 void wifiReply(const String&id=""){
- DynamicJsonDocument out(4096);out["event"]="wifi";out["id"]=id;out["stage"]=wifiStage;out["diagnostic"]=wifiScanDiagnostic;out["message"]=wifiNotice;out["connected"]=WiFi.status()==WL_CONNECTED;out["current"]=wifiName;
- JsonArray rows=out.createNestedArray("networks");for(int i=0;i<wifiCount;i++){auto r=rows.createNestedObject();r["ssid"]=wifiRows[i].ssid;r["rssi"]=wifiRows[i].rssi;r["open"]=wifiRows[i].open;r["saved"]=wifiRows[i].ssid==wifiName||wifiRows[i].ssid==wifiPreviousName;}serializeJson(out,Serial);Serial.println();
+ DynamicJsonDocument out(4096);out["event"]="wifi";out["id"]=id;out["stage"]=wifiStage;out["diagnostic"]=wifiScanDiagnostic;out["message"]=wifiNotice;out["connected"]=WiFi.status()==WL_CONNECTED;out["current"]=wifiName;out["active"]=WiFi.status()==WL_CONNECTED?WiFi.SSID():"";
+ JsonArray rows=out.createNestedArray("networks");for(int i=0;i<wifiCount;i++){auto r=rows.createNestedObject();r["ssid"]=wifiRows[i].ssid;r["rssi"]=wifiRows[i].rssi;r["open"]=wifiRows[i].open;r["saved"]=wifiStored(wifiRows[i].ssid);r["active"]=wifiActive(wifiRows[i].ssid);}serializeJson(out,Serial);Serial.println();
 }
 void restoreWifi(){WiFi.setAutoReconnect(true);if(wifiName.length())WiFi.begin(wifiName.c_str(),wifiPassword.c_str());}
 void cancelWifi(){int was=wifiStage;wifiStage=0;wifiCandidatePass="";if(was==2){esp_wifi_scan_stop();WiFi.scanDelete();}if(was==2||was==5||was==4){WiFi.disconnect(false,false);restoreWifi();}wifiNotice="已取消";needsDraw=true;}

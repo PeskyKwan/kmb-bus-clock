@@ -3,6 +3,16 @@
 #include <cmath>
 #include <algorithm>
 inline bool animationFresh(bool connected,int code,std::time_t now,std::time_t stamp,std::time_t eta){return connected&&code==2&&stamp>0&&std::abs(double(now-stamp))<=120&&eta>=now-30&&eta<=now+10800;}
+// Preserve an illustration through one transient empty response, but not
+// indefinitely after the provider repeatedly confirms no forecast exists.
+struct EtaAvailabilityGate{
+ unsigned char consecutiveEmpty=0;
+ void reset(){consecutiveEmpty=0;}
+ bool update(int code){
+  if(code==1){if(consecutiveEmpty<2)consecutiveEmpty++;return consecutiveEmpty>=2;}
+  consecutiveEmpty=0;return false;
+ }
+};
 // Rendering only: callers choose matched, approximate or held positions.
 struct ApproachMotion{
  bool visible=false;float fraction=0,opacity=0;
@@ -36,6 +46,8 @@ struct PersistentApproach{
  }
  const char* status()const{return mode==ETA_GUESS?"eta-guess":mode==MATCHED?"matched":mode==HELD?"held":"none";}
 };
+
+inline bool standbyIllustration(bool scheduled,PersistentApproach::Mode mode,float fraction){return scheduled&&mode==PersistentApproach::ETA_GUESS&&fraction<=.06f;}
 
 inline void alignIllustratedPair(PersistentApproach&first,PersistentApproach&second,std::time_t now,bool fresh,std::time_t target,bool nextFresh,std::time_t next){
  if(fresh&&first.lastTarget&&first.lastTarget<=now+30&&target>first.lastTarget+90){

@@ -10,8 +10,9 @@ inline time_t parseISO(const char*s){
  return mktime(&t)-(s[19]=='+'?1:-1)*(h*3600+m*60);
 }
 inline bool arrivalAlert(bool armed,bool connected,int code,time_t now,time_t stamp,time_t eta,int threshold){return armed&&connected&&code==2&&stamp>0&&labs(now-stamp)<=120&&eta>=now&&eta-now<=threshold*60;}
+inline bool scheduledEtaRemark(const char* en,const char* tc){return (en&&strstr(en,"Scheduled"))||(tc&&strstr(tc,"原定"));}
 // Called only after route/direction/service/stop filtering. This is the next
 // DISTINCT official forecast, including scheduled journeys, for illustration.
-inline void considerFollowingEta(time_t now,time_t first,time_t eta,time_t stamp,time_t&next,time_t&nextStamp){
- if(first>0&&stamp>0&&labs(now-stamp)<=120&&eta>first&&eta>=now-30&&eta<=now+10800&&(!next||eta<next)){next=eta;nextStamp=stamp;}
+inline bool considerFollowingEta(time_t now,time_t first,time_t eta,time_t stamp,time_t&next,time_t&nextStamp){
+ if(first>0&&stamp>0&&labs(now-stamp)<=120&&eta>first&&eta>=now-30&&eta<=now+10800&&(!next||eta<next)){next=eta;nextStamp=stamp;return true;}return false;
 }

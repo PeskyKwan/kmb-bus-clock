@@ -96,7 +96,7 @@ After the initial partition layout is installed, application-only updates write 
 
 ## First setup
 
-Use the installer above, or the screen's gear → 裝置 → Wi-Fi to scan/select a2.4GHz network and enter its password. Aa/123/符號 switch keyboard pages. The new credentials are saved only after a successful connection; failure/cancel restores the old network. The current and previous successful networks are remembered; select either to reconnect with an empty password.
+Use the installer above, or the screen's gear → 裝置 → Wi-Fi to scan/select a2.4GHz network and enter its password. Aa/123/符號 switch keyboard pages. The new credentials are saved only after a successful connection; failure/cancel restores the old network. The current and previous successful networks are remembered. Only the network actually in use is highlighted, and tapping the other saved network reconnects with its stored password without reopening the password keyboard.
 
 Gear → 巴士 → 路線 opens the route keypad; choose direction/service and boarding stop, then 儲存. Route and brightness edits use Save; 自動/日間/夜間 mode taps save immediately. The legacy same-LAN configuration form and optional `setup/server.py` bridge remain available for development, but are not needed for the normal install flow.
 
@@ -105,7 +105,8 @@ Gear → 巴士 → 路線 opens the route keypad; choose direction/service and 
 - A number is an estimated arrival time, not a guarantee.
 - `--` means no usable ETA (offline, waiting, no forecast, failed request or stale data).
 - The device normally polls every 30 seconds, backing off on failures. Data older than 120 seconds cannot trigger an alert.
-- Up to two bus markers are **multi-stop ETA position estimates**, not GPS. They match the next two ordered, independently supported upstream forecast chains across two distinct provider updates, then interpolate between stop predictions along the road. Schedule-only, ambiguous, stale or off-map positions are not shown; one reliable chain shows one bus rather than inventing a second. Short data gaps use only still-fresh history. Large revisions reacquire rather than driving backwards. The official first boarding-stop ETA and alerts remain independent. There is no fixed ten-minute journey animation.
+- Up to two bus markers are **multi-stop ETA position estimates**, not GPS. They match the next two ordered, independently supported upstream forecast chains across two distinct provider updates, then interpolate between stop predictions along the road. Schedule-only, ambiguous, stale or off-map positions are not shown; one reliable chain shows one bus rather than inventing a second. A single empty forecast response may retain the illustration through a transient gap, but two consecutive current successful no-forecast responses clear it so an off-hours bus cannot remain parked at the stop. Network failures still preserve the last illustration. Large revisions reacquire rather than driving backwards. The official first boarding-stop ETA and alerts remain independent. There is no fixed ten-minute journey animation.
+- A small animated `zZ` appears only beside a Scheduled Bus illustration still waiting at the map entrance without matched movement. It disappears when the forecast becomes live or the illustration advances. It does not claim that a physical bus is parked there.
 - Position polling adds one bounded, streamed route-wide request about every30seconds while ETA/map are available. Actual positioning accuracy still needs journey validation.
 - Notifications are one-shot. `提醒已開` means armed; an alert automatically disarms to avoid repeated alerts from ETA revisions.
 

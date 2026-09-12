@@ -1,7 +1,7 @@
 """Exercise device Wi-Fi UI without printing credentials or network names."""
 import argparse,json,time,uuid
 import serial
-p=argparse.ArgumentParser();p.add_argument('--port',required=True);args=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('--port',required=True);p.add_argument('--status-only',action='store_true');args=p.parse_args()
 s=serial.Serial(port=None,baudrate=115200,timeout=2);s.port=args.port;s.dtr=False;s.rts=False;s.open();time.sleep(10);seq=0
 
 def call(data,event):
@@ -35,9 +35,21 @@ def wait_wifi(seconds=65):
  raise TimeoutError('Wi-Fi operation')
 try:
  base=state();assert base.get('app')=='kmb-bus-clock'
+ if args.status_only:
+  wifi('scan');r=wait_wifi();end=time.monotonic()+20
+  while not r['connected'] and time.monotonic()<end:
+   time.sleep(.5);r=wifi()
+  active=[n for n in r['networks'] if n.get('active')]
+  assert r['connected'] and len(active)==1
+  print({'connected':r['connected'],'activeCount':len(active),'savedCount':sum(bool(n.get('saved')) for n in r['networks'])},flush=True)
+  raise SystemExit(0)
  ui('open');tap(50,150);r=tap(50,166);assert r['page']==6
  r=wait_wifi();assert len(r['networks'])>0,{'message':r['message'],'diagnostic':r.get('diagnostic')}
  networks=r['networks'];print('Native Wi-Fi scan PASS:',len(networks),'networks',flush=True)
+ active=[n for n in networks if n.get('active')]
+ assert len(active)<=1,{'activeCount':len(active)}
+ assert all(n.get('saved') for n in active)
+ print('Single active-network diagnostic PASS',flush=True)
  tap(100,215);assert ui()['page']==11
  alphabet='qwertyuiopasdfghjklzxcvbnm-_. '
  for c in 'kmb-test-no-network':
