@@ -100,9 +100,13 @@ Use the installer above, or the screen's gear → 裝置 → Wi-Fi to scan/selec
 
 Gear → 巴士 → 路線 opens the route keypad; choose direction/service and boarding stop, then 儲存. Route and brightness edits use Save; 自動/日間/夜間 mode taps save immediately. The legacy same-LAN configuration form and optional `setup/server.py` bridge remain available for development, but are not needed for the normal install flow.
 
+Bus settings also provide a0/30/60/90-second safety lead. It advances the displayed countdown and reminder only; raw official ETA and position matching remain unchanged. Device settings can rotate the screen and calibrated touch coordinates by180degrees for cable placement.
+
 ## What the display means
 
 - A number is an estimated arrival time, not a guarantee.
+- `分鐘預留` means the configured safety lead has already been subtracted from the displayed countdown; it is deliberately earlier than the raw official ETA.
+- `下一班 …分 · 估算` under the map is the second distinct official forecast, with the same safety lead applied. It replaces the former route-window distance because that distance described the drawn map section, not the bus's distance away. If KMB supplies no second forecast, it shows `--` rather than inventing one.
 - `--` means no usable ETA (offline, waiting, no forecast, failed request or stale data).
 - The device normally polls every 30 seconds, backing off on failures. Data older than 120 seconds cannot trigger an alert.
 - Up to two bus markers are **multi-stop ETA position estimates**, not GPS. They match the next two ordered, independently supported upstream forecast chains across two distinct provider updates, then interpolate between stop predictions along the road. Schedule-only, ambiguous, stale or off-map positions are not shown; one reliable chain shows one bus rather than inventing a second. A single empty forecast response may retain the illustration through a transient gap, but two consecutive current successful no-forecast responses clear it so an off-hours bus cannot remain parked at the stop. Network failures still preserve the last illustration. Large revisions reacquire rather than driving backwards. The official first boarding-stop ETA and alerts remain independent. There is no fixed ten-minute journey animation.

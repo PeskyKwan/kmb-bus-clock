@@ -13,7 +13,7 @@ void drawDownloadedMap(){markerPainted=false;markerCount=0;mapActualRoad=false;l
  if(arrowScore>=0)travelArrow(ax,ay,ux,uy);
  for(int i=0;i<labels;i++){auto point=activeRoad.stops[chosen[i]];auto b=boxes[i];int x=constrain(point.x,b.x,b.x+b.w),y=constrain(point.y,b.y,b.y+b.h);if(hypotf(x-point.x,y-point.y)>21)lcd.drawLine(point.x,point.y,x,y,0xADB4);}
  for(int i=0;i<total;i++){auto p=activeRoad.stops[i];lcd.fillCircle(p.x,p.y,i==total-1?5:2,i==total-1?RED:INK);}
- textBG=MAP;for(int i=0;i<labels;i++)label(boxes[i].x,boxes[i].y,names[i].c_str(),12,INK,84);label(289,146,"北",12);label(289,158,"↑",12);textBG=BG;lcd.fillRect(134,175,174,27,BG);String caption=String(activeRoad.meters/1000.f,activeRoad.meters>=2999?0:1)+"km · 估算";label(136,185,caption.c_str(),12,INK,171);
+ textBG=MAP;for(int i=0;i<labels;i++)label(boxes[i].x,boxes[i].y,names[i].c_str(),12,INK,84);label(289,146,"北",12);label(289,158,"↑",12);textBG=BG;lcd.fillRect(134,175,174,27,BG);String caption=followingEtaCaption(time(nullptr));label(136,185,caption.c_str(),12,INK,171);
  // A crowded map still gets a travel-direction arrow in the caption margin.
  if(arrowScore<0)for(int i=activeRoad.approachCount-1;i>0;i--){float dx=activeRoad.points[i].x-activeRoad.points[i-1].x,dy=activeRoad.points[i].y-activeRoad.points[i-1].y,len=hypotf(dx,dy);if(len>.1f){travelArrow(292,190,dx/len,dy/len);break;}}
 

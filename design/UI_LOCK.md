@@ -60,3 +60,12 @@ Sum still wants to see two little buses. Extend the same guess/hold/recovery beh
 
 ## User-approved scheduled sleep animation —2026-09-13
 Sum requested a playful, gently moving `zZ` sign beside a bus that is scheduled but not yet moving. Show the small custom-drawn sign only when the official target row is marked Scheduled Bus, the illustration has no supported matched movement and remains at the map entrance. Remove it as soon as that journey is no longer scheduled or its ETA illustration advances. Adjacent sleeping buses share one `zZ` cluster to avoid label overlap. This is an ETA-status illustration, not proof that a physical bus is parked at the terminal or GPS-tracked. Preserve the locked map, labels, palette and all other layout.
+
+## User-approved screen rotation and ETA safety lead —2026-09-17
+- Add a saved Device setting for normal or 180-degree inverted display. Rotate the physical screen and calibrated touch coordinates together; do not ask for a new calibration merely because orientation changed.
+- Add a Bus setting for a0/30/60/90-second safety lead. The selected lead changes the displayed countdown and one-shot reminder timing, but it must not alter the stored official ETA, route-wide matcher targets, map position or source timestamps. When non-zero, label the countdown `分鐘預留` rather than claiming it is the raw official arrival time.
+- Preserve all existing layout bounds, palette, fonts and map dimensions. The new controls live only in settings pages.
+
+## User-approved second-arrival caption —2026-09-22
+
+Replace the map footer's route-window distance (for example `2.7km`) with a small `下一班 …分 · 估算` countdown for the second distinct official target forecast. Apply the same saved safety lead as the large first ETA. Preserve the large ETA,174×140 map, bus illustrations, palette and typography; show `--` when no second forecast exists. Existing ordered ETA rollover promotes the second arrival after the first passes and must never fabricate an extra bus.

@@ -9,7 +9,8 @@ inline time_t parseISO(const char*s){
  tm t={};if(!strptime(s,"%Y-%m-%dT%H:%M:%S",&t))return 0;int h=atoi(s+20),m=atoi(s+23);if(h>14||m>59)return 0;
  return mktime(&t)-(s[19]=='+'?1:-1)*(h*3600+m*60);
 }
-inline bool arrivalAlert(bool armed,bool connected,int code,time_t now,time_t stamp,time_t eta,int threshold){return armed&&connected&&code==2&&stamp>0&&labs(now-stamp)<=120&&eta>=now&&eta-now<=threshold*60;}
+inline bool arrivalAlert(bool armed,bool connected,int code,time_t now,time_t stamp,time_t eta,int threshold,int leadSeconds=0){return armed&&connected&&code==2&&stamp>0&&labs(now-stamp)<=120&&eta>=now&&eta-now<=threshold*60+leadSeconds;}
+inline int displayEtaMinutes(time_t now,time_t eta,int leadSeconds){if(!eta)return -1;double seconds=double(eta-now-leadSeconds);return seconds<=0?0:(int)((seconds+59)/60);}
 inline bool scheduledEtaRemark(const char* en,const char* tc){return (en&&strstr(en,"Scheduled"))||(tc&&strstr(tc,"原定"));}
 // Called only after route/direction/service/stop filtering. This is the next
 // DISTINCT official forecast, including scheduled journeys, for illustration.

@@ -10,6 +10,7 @@ class BufferedDisplay:public Adafruit_GFX{
  uint32_t sentTiles=0,presents=0;
  BufferedDisplay():Adafruit_GFX(320,240){}
  bool begin(){if(allocated)return true;for(int i=0;i<15;i++){bands[i]=(uint8_t*)calloc(320*16,1);if(!bands[i]){for(int j=0;j<i;j++){free(bands[j]);bands[j]=nullptr;}return false;}}allocated=true;return true;}
+ void invalidate(){first=true;pending=true;}
  bool ready()const{return allocated;}
  uint16_t pixelColor(int x,int y)const{if(!allocated||x<0||y<0||x>=320||y>=240)return 0;return pgm_read_word(displayPalette+row(y)[x]);}
  void drawPixel(int16_t x,int16_t y,uint16_t color)override{if(!allocated||x<0||y<0||x>=320||y>=240)return;uint8_t c=pgm_read_byte(displayColorIndex+color);auto&p=row(y)[x];if(p!=c){p=c;pending=true;}}
