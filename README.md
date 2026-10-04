@@ -133,6 +133,10 @@ c++ -std=c++17 tests/native_input_test.cpp -o /tmp/kmb-native-input
 /tmp/kmb-native-input
 c++ -std=c++17 tests/map_render_test.cpp -o /tmp/kmb-map-tests
 /tmp/kmb-map-tests
+c++ -std=c++17 tests/heal_policy_test.cpp -o /tmp/kmb-heal-tests
+/tmp/kmb-heal-tests
+c++ -std=c++17 -pthread tests/tls_pool_test.cpp -o /tmp/kmb-tls-pool-tests
+/tmp/kmb-tls-pool-tests
 python -m py_compile setup/server.py
 pio run
 ```
@@ -144,6 +148,12 @@ Both little buses are illustrations of the first two distinct official target fo
 For read-only USB position diagnostics, use `python3 tests/device_position_audit.py --port PORT --output /tmp/kmb-position-audit --position --samples 4`. This uses POSIX serial access without toggling DTR/RTS or resetting the board. `--feeds` also captures the current official target and route responses. Network identifiers are omitted from saved state. If the OS reports `Device not configured`, close the reader and try one fresh no-reset open; this recovered the invalid handle during device QA. If that also fails, reconnect the USB device. Never blindly replay a configuration-changing command after a disconnect; query the current state first. No-reset access does not guarantee a healthy USB driver.
 
 The USB command `{"cmd":"position"}` reports target timestamps/freshness, route-poll age, HTTP/TLS diagnostics, matching status, and the latest frame's anchor rows `[eta, timestamp, scheduled, rank]`. Busy responses omit the frame while the worker owns it. `ready` describes a supported estimate; the main ETA/connectivity gate still controls visibility. No extra on-screen controls are added. See the [position audit](docs/POSITION_AUDIT_2026-09-10.md) for evidence and remaining device checks.
+
+### Memory and self-heal diagnostics
+
+HTTPS on this board needs two ~16.7KB mbedTLS record buffers per request, and normally only one internal heap block is large enough to hold them. After long runtime that block can split and the request fails with `MBEDTLS_ERR_SSL_ALLOC_FAILED` (`-32512`) even though total free memory looks fine. Firmware0.3.3 reserves those two buffers once and lends them to every request (`src/tls_pool.h`), keeps the ETA response document at 4KB (a live3-row response uses about1.1KB) and streams USB/LAN state JSON without a heap document. If ETA still fails with a device-side HTTP/TLS/memory error three times in a row, the clock pauses other network jobs and retries promptly; later attempts also restart Wi-Fi STA with the saved credentials. Only after those soft attempts and25minutes of continuous failure may it restart, at most once per six hours (RTC-memory guard, synced clock required); settings, Wi-Fi, route and calibration are never written. Policy logic is host-tested in `tests/heal_policy_test.cpp`.
+
+Hidden telemetry is available in USB `{"cmd":"state"}` and LAN `GET /state` (LAN omits SSID/IP): `heap8`/`largest8` are the byte-addressable internal heap that TLS can use. `largestHeap` is kept for compatibility but also counts32-bit-only IRAM, so it can read about45KB even when the usable heap is fragmented. `{"cmd":"heap"}` prints per-region heap info. Test hooks: `{"cmd":"heal","fail":N}` simulates N TLS allocation failures without network, `"dryRun":true` replaces the restart with a log entry, `"skipS":S` advances only the self-heal clock, `"reset":true` ends the test. See `tests/device_selfheal_smoke.py`, `tests/device_heap_probe.py` and `tests/lan_state_sampler.py`. Nothing is drawn on screen.
 
 ## Contributing
 

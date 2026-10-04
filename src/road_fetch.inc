@@ -10,7 +10,7 @@ uint32_t roadTriedGen=0;volatile int roadDiagnostic=0,mapTlsRetries=0;
 bool downloadRoadOnce(uint32_t id,char bound,std::vector<GeoPoint>&points){
  WiFiClientSecure tls;tls.setCACert(mapCA);HTTPClient h;h.setConnectTimeout(6000);h.setTimeout(7000);h.useHTTP10(true);
  String url="https://hkbus.github.io/route-waypoints/"+String(id)+"-"+String(bound)+".json";
- if(!h.begin(tls,url)){roadDiagnostic=-100;return false;}int httpCode=h.GET();if(httpCode!=200){char errorText[1];int tlsCode=tls.lastError(errorText,sizeof(errorText));roadDiagnostic=tlsCode?tlsCode:httpCode;h.end();return false;}auto&stream=h.getStream();stream.setTimeout(7000);
+ if(!h.begin(tls,url)){roadDiagnostic=-100;return false;}notePreTls();int httpCode=h.GET();if(httpCode!=200){char errorText[1];int tlsCode=tls.lastError(errorText,sizeof(errorText));roadDiagnostic=tlsCode?tlsCode:httpCode;h.end();return false;}auto&stream=h.getStream();stream.setTimeout(7000);
  if(!stream.find("\"coordinates\"")){h.end();return false;}
  RoadSimplifier simplify(points);int depth=0,used=0,field=0;char token[32];float lon=0;bool done=false,bad=false;unsigned long start=millis();int bytes=0;
  while(millis()-start<25000){int ch=stream.read();if(ch<0){if(!h.connected()&&!stream.available())break;delay(1);continue;}if(++bytes>512000){bad=true;break;}if(bytes%256==0)delay(1);

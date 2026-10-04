@@ -19,7 +19,7 @@ bool fetchPosition(const Request&req){
  pendingFrame=EtaFrame{};pendingFrame.layout=req.layout;
  WiFiClientSecure tls;tls.setCACert(kmbCA);tls.setHandshakeTimeout(10);HTTPClient http;http.setConnectTimeout(5000);http.setTimeout(5000);http.useHTTP10(true);
  if(!http.begin(tls,"https://data.etabus.gov.hk/v1/transport/kmb/route-eta/"+String(req.c.route)+"/"+String(req.c.service)))return false;
- int code=http.GET();positionHttpDiagnostic=code;char error[1];positionTlsDiagnostic=code<0?tls.lastError(error,sizeof(error)):0;
+ notePreTls();int code=http.GET();positionHttpDiagnostic=code;char error[1];positionTlsDiagnostic=code<0?tls.lastError(error,sizeof(error)):0;if(code<0)noteTlsFailure();
  if(code!=200||http.getSize()>262144){http.end();return false;}
  PositionStream stream(http.getStream());bool ok=decodePosition(stream,pendingFrame,req.c.route,req.c.bound,req.c.service,req.c.destination,time(nullptr));
  http.end();return ok;
