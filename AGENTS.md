@@ -1,5 +1,13 @@
 # KMB Bus Clock — approved UI is locked
 
+## SHARED CHANGE LOG — every thread / agent (Sum, 2026-10-05)
+- Threads can't read each other's chats; only files are shared. At the start of work read the last 30 lines of
+  `/Volumes/Sum-AI-Projects/Codex-Claude Workspaces/_SHARED/SHARED_CHANGELOG.md` and `_SHARED/MACHINE_LOG.md`.
+- The moment you change anything shared — any Mac / NAS / router (OS update, reboot, settings, permissions, network, Wi-Fi),
+  Hermes agents / gateways / cron, logins / credentials, shared scripts — append ONE line to SHARED_CHANGELOG.md
+  (`YYYY-MM-DD HH:MM HKT | who | machine/system | what changed | details file`). No line = the change didn't happen.
+- Write only inside your own project folder and `_SHARED`. Never edit another project's files; read them only when needed.
+
 Read `design/UI_LOCK.md` before changing this project. If the maintainer-local `_CONSOLIDATED_HANDOFF.md` exists, read it too; it is intentionally absent from public clones.
 
 - Sum explicitly approved the physical-device UI on 2026-09-09 and instructed: "Pls lock in this UI design and layout".
