@@ -8,6 +8,10 @@
   (`YYYY-MM-DD HH:MM HKT | who | machine/system | what changed | details file`). No line = the change didn't happen.
 - Write only inside your own project folder and `_SHARED`. Never edit another project's files; read them only when needed.
 
+## SESSION CLOSE — commit + push (Sum, 2026-10-06)
+- At the end of every session, commit and push this project's changes to its private/own origin.
+- Never commit or push passwords, tokens, `.env` files or keys — check the staged diff first.
+
 Read `design/UI_LOCK.md` before changing this project. If the maintainer-local `_CONSOLIDATED_HANDOFF.md` exists, read it too; it is intentionally absent from public clones.
 
 - Sum explicitly approved the physical-device UI on 2026-09-09 and instructed: "Pls lock in this UI design and layout".
