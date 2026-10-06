@@ -42,3 +42,6 @@ src/map_sources.h
 node_modules/
 fonts/*.ttf
 !installer/firmware/*.bin
+# Local-only (contain board MAC / LAN IP); redacted copies stay in history
+evidence/heap-selfheal-2026-10-04/flash-log.txt
+docs/plans/HEAP_SELFHEAL_JOB_2026-10-04.md
