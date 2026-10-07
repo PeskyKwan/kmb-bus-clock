@@ -119,27 +119,12 @@ See [map design and remaining work](docs/MAP_DESIGN.md), [beta status](docs/BETA
 ## Tests
 
 ```sh
-c++ -std=c++17 tests/eta_logic_test.cpp -o /tmp/kmb-eta-tests
-/tmp/kmb-eta-tests
-c++ -std=c++17 tests/eta_animation_test.cpp -o /tmp/kmb-animation-tests
-/tmp/kmb-animation-tests
-c++ -std=c++17 tests/eta_position_test.cpp -o /tmp/kmb-position-tests
-/tmp/kmb-position-tests
-c++ -std=c++17 -I.pio/libdeps/board/ArduinoJson/src tests/position_decode_test.cpp -o /tmp/kmb-decode-tests
-/tmp/kmb-decode-tests
-c++ -std=c++17 -I.pio/libdeps/board/ArduinoJson/src tests/position_replay_test.cpp -o /tmp/kmb-position-replay
-/tmp/kmb-position-replay
-c++ -std=c++17 tests/native_input_test.cpp -o /tmp/kmb-native-input
-/tmp/kmb-native-input
-c++ -std=c++17 tests/map_render_test.cpp -o /tmp/kmb-map-tests
-/tmp/kmb-map-tests
-c++ -std=c++17 tests/heal_policy_test.cpp -o /tmp/kmb-heal-tests
-/tmp/kmb-heal-tests
-c++ -std=c++17 -pthread tests/tls_pool_test.cpp -o /tmp/kmb-tls-pool-tests
-/tmp/kmb-tls-pool-tests
+tests/run_host_tests.sh
 python -m py_compile setup/server.py
 pio run
 ```
+
+`tests/run_host_tests.sh` builds and runs every `tests/*.cpp` (C++17 compiler) and `tests/*.mjs` (Node.js) from a fresh clone and exits non-zero on any failure. It uses PlatformIO's ArduinoJson when `.pio` exists; otherwise it downloads the pinned ArduinoJson 6.21.5 header from GitHub (checksum-verified) into the gitignored `.host-test-deps/`.
 
 The ETA/animation/map/tile checks cover timezone conversion, invalid/null timestamps, stale/future data, offline state, arming and threshold boundaries. They are not a substitute for device, route and real-trip testing.
 
