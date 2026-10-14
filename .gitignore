@@ -45,3 +45,6 @@ fonts/*.ttf
 # Local-only (contain board MAC / LAN IP); redacted copies stay in history
 evidence/heap-selfheal-2026-10-04/flash-log.txt
 docs/plans/HEAP_SELFHEAL_JOB_2026-10-04.md
+
+# Host-test dependencies downloaded by tests/run_host_tests.sh
+.host-test-deps/
